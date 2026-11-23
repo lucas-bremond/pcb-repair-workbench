@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/lucas-bremond/pcb-scenario/scenario.schema.json",
+  "$id": "https://github.com/lucas-bremond/pcb-repair-workbench/scenario.schema.json",
   "title": "PCB repair scenario",
   "description": "One board under investigation: its parts, the nets known so far with the confidence of every connection, the photos they are placed on, the instruments at hand, and the questions still open. The investigation itself is in plan.json and record.json next to it (docs/scenario-format.md). Paths are relative to the scenario folder. Pins that are on no net are unknown, not unconnected.",
   "type": "object",
