@@ -1,0 +1,83 @@
+{
+  "format": "pcb-record",
+  "version": 2,
+  "observations": [
+    {
+      "id": "O1",
+      "date": "2026-11-07",
+      "text": "**Press Move.** Lamp blinks for a split second, N/S LED flashes then goes out, motor doesn't turn. Conclusion: the unit resets."
+    },
+    {
+      "id": "O2",
+      "date": "2026-11-07",
+      "text": "**Press Shooting Star.** Same; SS LED flashes then goes out. Conclusion: same fault."
+    },
+    {
+      "id": "O3",
+      "date": "2026-11-07",
+      "text": "**Try 5 V/2 A and 5 V/4 A adapters.** No change. Conclusion: not the adapter."
+    },
+    {
+      "id": "O4",
+      "date": "2026-11-07",
+      "text": "**Open the unit, check the motor and belt.** Belt intact, motor shaft never moves. Conclusion: not the transmission."
+    },
+    {
+      "id": "O5",
+      "date": "2026-11-07",
+      "text": "**Review the manual.** Shooting stars only run while rotating; rotation reverses (N/S); 5 W at 5 V. Conclusion: brownout reset suspected; normal draw about 1 A."
+    },
+    {
+      "id": "O6",
+      "date": "2026-11-07",
+      "text": "**Press Shooting Star alone, rotation never switched on.** Same reset. Conclusion: not specific to the Move button."
+    },
+    {
+      "id": "O7",
+      "date": "2026-11-07",
+      "text": "**Photograph both sides of the board.** No visible damage; pads and main parts identified. Conclusion: board reference in the README."
+    },
+    {
+      "id": "O8",
+      "date": "2026-11-07",
+      "text": "**Inspect the shooting-star mechanism.** It depends on the motor turning. Conclusion: both buttons go through the motor path."
+    },
+    {
+      "id": "O9",
+      "date": "2026-11-07",
+      "text": "**Disconnect `M+`, press Shooting Star.** Still resets. Conclusion: motor ruled out; the fault is upstream of it."
+    },
+    {
+      "id": "O10",
+      "date": "2026-11-07",
+      "text": "**Photograph part close-ups (`photos/parts/`).** U4 is a Mixic MX08L motor driver, U2 a 3.3 V regulator, U1 unmarked; no visible damage. Conclusion: motor driver identified."
+    },
+    {
+      "id": "O11",
+      "date": "2026-11-07",
+      "text": "**Run re:trace (automated analysis) on the photos.** No parts, markings or real traces found (sees paper and pads, not masked traces). Conclusion: not usable here."
+    },
+    {
+      "id": "O12",
+      "date": "2026-11-07",
+      "text": "**Run a PCB-trained YOLO model on the photos.** Finds 41 of 44 parts; ICs and SMD passives right, U4 called a diode on the board view. Conclusion: nothing new."
+    },
+    {
+      "id": "O13",
+      "date": "2026-11-07",
+      "text": "**Build a partial board model from the photos.** 45 of 133 pins on a net, mostly assumed; netlist, KiCad schematic and HTML viewer. Conclusion: board model built (this scenario)."
+    },
+    {
+      "id": "O14",
+      "date": "2026-11-08",
+      "text": "**Trace audit of the model; wires and 3D traces.** C6 traced across M+/M-; 4 placement-only links downgraded; 6 nets wired. Conclusion: model audited; traces drawn."
+    },
+    {
+      "id": "O15",
+      "date": "2026-11-08",
+      "text": "**Draw every known connection; schematic editor.** All 45 known pins wired or on power symbols; wire style shows confidence. Conclusion: every known connection drawn."
+    }
+  ],
+  "instructions": [],
+  "results": []
+}

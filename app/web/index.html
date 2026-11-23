@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Board viewer</title>
+<link rel="icon" href="data:,">
+<script>
+  // apply the theme before the first paint (light, dark or the system's)
+  try {
+    const t = JSON.parse(localStorage.getItem('pcbmodel-ui') || '{}').theme || 'system';
+    if (t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
+  } catch (e) { /* storage unavailable */ }
+</script>
+</head>
+<body>
+<div id="root"></div>
+<script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

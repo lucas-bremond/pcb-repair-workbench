@@ -1,0 +1,1318 @@
+{
+  "visual": {
+    "title": "Inspection",
+    "applies_to": [],
+    "goal": "Find visible damage before measuring or powering anything.",
+    "instruments": [],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power** and take out any batteries."
+      },
+      {
+        "text": "**Light the area well** and use a magnifier or your phone's camera zoomed in."
+      },
+      {
+        "text": "**Look for:** burn marks or brown patches, a bulged or leaking capacitor top, cracks in a part's body, green or white crust (corrosion), solder bridging two pins, a dull or cracked joint, a lifted pin, a loose wire."
+      },
+      {
+        "text": "**Smell it.** A burnt smell close to a part points to it."
+      }
+    ],
+    "limits": "Most failed parts look perfectly normal. Finding nothing proves nothing.",
+    "answers": [
+      {
+        "id": "damage",
+        "label": "I see damage (say where in the notes)",
+        "outcome": "fail"
+      },
+      {
+        "id": "clean",
+        "label": "Nothing visible",
+        "outcome": "pass"
+      },
+      {
+        "id": "unsure",
+        "label": "Something looks odd, not sure",
+        "outcome": "inconclusive"
+      }
+    ]
+  },
+  "rail-to-ground": {
+    "title": "Rail to ground: is it shorted?",
+    "applies_to": ["net"],
+    "goal": "One reading tells whether anything on this supply rail is shorted to ground. Every capacitor on the rail is in parallel, so a clean reading clears all of them of a short at once.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power** and wait a minute for the capacitors to discharge."
+      },
+      {
+        "text": "**Meter on Ω (resistance)**, not the beeper. **Touch the two probes together** and note the reading: the leads' own resistance.",
+        "reading": {
+          "key": "leads",
+          "label": "Probes touching",
+          "unit": "Ω",
+          "hint": "e.g. 0.2",
+          "optional": true
+        }
+      },
+      {
+        "text": "**Black probe on ground, red probe on the rail**, at the points the step shows. Hold them still for **five seconds**: the reading often starts low and climbs as the capacitors charge. Note it once it stops moving.",
+        "reading": {
+          "key": "ohms",
+          "label": "Rail to ground",
+          "unit": "Ω",
+          "hint": "e.g. 4.7k, 0.3, OL"
+        }
+      }
+    ],
+    "expect": {
+      "text": "Climbs past 1 kΩ, or to OL. On a small 5 V board, under 10 Ω and steady is a fault.",
+      "basis": "rule_of_thumb",
+      "source": "docs/research/board-repair-diagnosis.md, unpowered rail readings"
+    },
+    "limits": "Clears the rail's capacitors of a short only: not an open or worn capacitor, not a dead chip that is not shorted.",
+    "answers": [
+      {
+        "id": "short",
+        "label": "Under 1 Ω and steady: a hard short",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 1
+          }
+        ]
+      },
+      {
+        "id": "low",
+        "label": "1 to 10 Ω and steady",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 10
+          }
+        ]
+      },
+      {
+        "id": "between",
+        "label": "10 Ω to 1 kΩ and steady",
+        "outcome": "inconclusive",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 1000
+          }
+        ]
+      },
+      {
+        "id": "ok",
+        "label": "Over 1 kΩ, or climbing to OL",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "ohms",
+            "min": 1000
+          }
+        ]
+      }
+    ]
+  },
+  "continuity": {
+    "title": "Continuity between two points",
+    "applies_to": ["pins"],
+    "goal": "Whether two points are connected by copper. Also how the board model's connections become measured.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.**"
+      },
+      {
+        "text": "**Meter on Ω**, not the beeper (meters beep up to 10 to 200 Ω, which hides a bad joint). Touch the probes together and note the leads' resistance.",
+        "reading": {
+          "key": "leads",
+          "label": "Probes touching",
+          "unit": "Ω",
+          "hint": "e.g. 0.2",
+          "optional": true
+        }
+      },
+      {
+        "text": "**One probe on each point** the step shows, pressing on the solder, not the varnish. Note the reading.",
+        "reading": {
+          "key": "ohms",
+          "label": "Between the two points",
+          "unit": "Ω",
+          "hint": "e.g. 0.3, OL"
+        }
+      }
+    ],
+    "expect": {
+      "text": "Under 2 Ω when connected by copper; OL when not. Anything in between goes through a part.",
+      "basis": "physics"
+    },
+    "answers": [
+      {
+        "id": "connected",
+        "label": "Under 2 Ω: connected",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 2
+          }
+        ]
+      },
+      {
+        "id": "through-a-part",
+        "label": "2 Ω to 100 kΩ: through a part",
+        "outcome": "inconclusive",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 100000
+          }
+        ]
+      },
+      {
+        "id": "open",
+        "label": "Over 100 kΩ or OL: not connected",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "ohms",
+            "min": 100000
+          }
+        ]
+      }
+    ]
+  },
+  "rail-voltage": {
+    "title": "Rail voltage, powered",
+    "applies_to": ["net"],
+    "goal": "Whether a supply rail is at its voltage, measured where it is used.",
+    "instruments": ["multimeter"],
+    "power": "on",
+    "steps": [
+      {
+        "text": "**Meter on DC volts** (V with a straight line). Clip or hold the **black probe on ground** before powering."
+      },
+      {
+        "text": "**Plug the power in** and switch the unit on. Keep your hand off the board except for the red probe."
+      },
+      {
+        "text": "**Red probe on the point the step shows.** Hold it steady; don't let it slip onto a neighbouring pin.",
+        "reading": {
+          "key": "volts",
+          "label": "Voltage",
+          "unit": "V",
+          "hint": "e.g. 4.97"
+        }
+      },
+      {
+        "text": "**Unplug the power** before moving on."
+      }
+    ],
+    "limits": "A multimeter shows an average: it cannot see a dip lasting a few milliseconds, such as the one behind a reset when a motor starts.",
+    "answers": [
+      {
+        "id": "zero",
+        "label": "Under 0.1 V: no voltage",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "volts",
+            "max": 0.1
+          }
+        ]
+      },
+      {
+        "id": "in-range",
+        "label": "Within the expected range",
+        "outcome": "pass"
+      },
+      {
+        "id": "low",
+        "label": "Below the expected range",
+        "outcome": "fail"
+      },
+      {
+        "id": "high",
+        "label": "Above the expected range",
+        "outcome": "fail"
+      }
+    ]
+  },
+  "current-draw": {
+    "title": "Current drawn from the supply",
+    "applies_to": [],
+    "goal": "The board's current at idle and during one action. The pattern sorts the fault: none, a little, too much, or pulsing.",
+    "instruments": ["usb_meter"],
+    "power": "on",
+    "steps": [
+      {
+        "text": "**Put the USB power meter between the adapter and the unit's cable.**"
+      },
+      {
+        "text": "**Switch the unit on** and wait until it is idle. Note the current.",
+        "reading": {
+          "key": "idle",
+          "label": "Idle",
+          "unit": "A",
+          "hint": "e.g. 0.08"
+        }
+      },
+      {
+        "text": "**Do the action the step names once**, watching the meter. Note the highest current you see, and anything odd (it drops to 0, it pulses).",
+        "reading": {
+          "key": "peak",
+          "label": "During the action",
+          "unit": "A",
+          "hint": "e.g. 0.9",
+          "optional": true
+        }
+      }
+    ],
+    "limits": "A USB meter updates a few times a second: it misses very short spikes.",
+    "answers": [
+      {
+        "id": "none",
+        "label": "Nothing at all",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "idle",
+            "max": 0.002
+          }
+        ]
+      },
+      {
+        "id": "normal",
+        "label": "Looks normal",
+        "outcome": "pass"
+      },
+      {
+        "id": "high",
+        "label": "Much higher than expected",
+        "outcome": "fail"
+      },
+      {
+        "id": "pulsing",
+        "label": "Pulses or jumps around",
+        "outcome": "fail"
+      }
+    ]
+  },
+  "resistor": {
+    "title": "Resistor: value",
+    "applies_to": ["resistor"],
+    "goal": "A resistor fails open or drifts high far more often than it shorts. On the board, other parts in parallel can only lower the reading: a reading above the marked value is real, a lower one is not proof.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.** Read the marking: 3 digits (`472` = 47 × 10² = 4.7 kΩ), 4 digits (`1002` = 10 kΩ), or `R` for the decimal point (`R390` = 0.39 Ω)."
+      },
+      {
+        "text": "**Look at it:** a charred or cracked body, or a discoloured board under it."
+      },
+      {
+        "text": "**Meter on Ω.** Touch the probes together and note the leads' resistance (matters under 10 Ω).",
+        "reading": {
+          "key": "leads",
+          "label": "Probes touching",
+          "unit": "Ω",
+          "hint": "e.g. 0.2",
+          "optional": true
+        }
+      },
+      {
+        "text": "**One probe on each end** of the resistor. Note the reading once it settles.",
+        "reading": {
+          "key": "ohms",
+          "label": "Measured",
+          "unit": "Ω",
+          "hint": "e.g. 99.8, 4.7k, OL"
+        }
+      }
+    ],
+    "limits": "In circuit, a reading below the marked value is not a fault by itself: lift one end to be sure.",
+    "answers": [
+      {
+        "id": "open",
+        "label": "OL: open",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "ohms",
+            "is": "OL"
+          }
+        ]
+      },
+      {
+        "id": "in-tolerance",
+        "label": "Within the marked value's tolerance",
+        "outcome": "pass"
+      },
+      {
+        "id": "high",
+        "label": "Clearly above the marked value",
+        "outcome": "fail"
+      },
+      {
+        "id": "low",
+        "label": "Below the marked value (in circuit)",
+        "outcome": "inconclusive"
+      }
+    ]
+  },
+  "capacitor": {
+    "title": "Ceramic capacitor: short",
+    "applies_to": ["capacitor"],
+    "goal": "Ceramic capacitors fail shorted, often from a crack you cannot see. A meter tells shorted from not shorted; not the value.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power** and wait a minute."
+      },
+      {
+        "text": "**Look at it** under a magnifier: a crack across the body, or a chip at its ends."
+      },
+      {
+        "text": "**Meter on Ω, one probe on each end.** The reading climbs as it charges. Note it after five seconds.",
+        "reading": {
+          "key": "ohms",
+          "label": "Across it",
+          "unit": "Ω",
+          "hint": "OL, or e.g. 0.3"
+        }
+      }
+    ],
+    "limits": "On the board this reads the same as the whole rail it sits on: a short here may be any part on that rail.",
+    "answers": [
+      {
+        "id": "short",
+        "label": "Under 1 Ω and steady",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 1
+          }
+        ]
+      },
+      {
+        "id": "low",
+        "label": "1 Ω to 1 kΩ and steady",
+        "outcome": "inconclusive",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 1000
+          }
+        ]
+      },
+      {
+        "id": "ok",
+        "label": "Climbs past 1 kΩ, or OL",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "ohms",
+            "min": 1000
+          }
+        ]
+      }
+    ]
+  },
+  "electrolytic": {
+    "title": "Electrolytic capacitor: look and short",
+    "applies_to": ["electrolytic"],
+    "goal": "Electrolytics mostly wear out (their ESR rises), which a multimeter cannot see. It can find a shorted one and show the visible signs.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.** Meter on DC volts across it (red on `+`, the side without the stripe): under 0.5 V before touching. Higher: discharge it through a 1 kΩ resistor.",
+        "reading": {
+          "key": "volts",
+          "label": "Voltage across it",
+          "unit": "V",
+          "hint": "e.g. 0.02",
+          "optional": true
+        }
+      },
+      {
+        "text": "**Look at the top and the base:** a domed top, brown crust or a stained board around it is a failed capacitor."
+      },
+      {
+        "text": "**Meter on Ω, red on `+`, black on `-`.** The reading should climb towards high values as it charges. Note it after ten seconds.",
+        "reading": {
+          "key": "ohms",
+          "label": "Across it",
+          "unit": "Ω",
+          "hint": "climbing, e.g. 12k, or 0.4"
+        }
+      }
+    ],
+    "limits": "A pass clears it of a short only. A worn capacitor (high ESR) reads normal here: only an ESR meter, or temporarily fitting a good one in parallel, can tell.",
+    "answers": [
+      {
+        "id": "short",
+        "label": "Under 1 Ω and steady",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 1
+          }
+        ]
+      },
+      {
+        "id": "low",
+        "label": "1 Ω to 1 kΩ and steady",
+        "outcome": "inconclusive",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 1000
+          }
+        ]
+      },
+      {
+        "id": "not-shorted",
+        "label": "Climbs past 1 kΩ: not shorted",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "ohms",
+            "min": 1000
+          }
+        ]
+      }
+    ]
+  },
+  "electrolytic-esr": {
+    "title": "Electrolytic capacitor: ESR",
+    "applies_to": ["electrolytic"],
+    "goal": "The ESR (internal resistance) is how worn an electrolytic is, and it can be measured on the board.",
+    "instruments": ["esr_meter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power** and check it is discharged (under 0.5 V)."
+      },
+      {
+        "text": "**Clip the ESR meter across it**, polarity as marked on the meter. Note the ESR.",
+        "reading": {
+          "key": "esr",
+          "label": "ESR",
+          "unit": "Ω",
+          "hint": "e.g. 0.6"
+        }
+      }
+    ],
+    "expect": {
+      "text": "At or below the chart value for its capacitance and voltage (47 µF 16 V: 2 Ω, 100 µF 16 V: 0.7 Ω, 470 µF 16 V: 0.2 Ω). Two to three times that is worn.",
+      "basis": "rule_of_thumb",
+      "source": "ESR chart (sound-au.com), docs/research/board-repair-diagnosis.md"
+    },
+    "answers": [
+      {
+        "id": "good",
+        "label": "At or below the chart value",
+        "outcome": "pass"
+      },
+      {
+        "id": "worn",
+        "label": "Two times the chart value or more",
+        "outcome": "fail"
+      },
+      {
+        "id": "shorted",
+        "label": "Far below, near 0: maybe shorted",
+        "outcome": "inconclusive"
+      }
+    ]
+  },
+  "diode": {
+    "title": "Diode: junction test",
+    "applies_to": ["diode"],
+    "goal": "A diode conducts one way only. The meter's diode mode shows its forward voltage one way and OL the other.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.** Meter on diode mode (the diode symbol)."
+      },
+      {
+        "text": "**Forward:** red probe on the anode, black on the cathode (the end with the band).",
+        "reading": {
+          "key": "fwd",
+          "label": "Forward",
+          "unit": "V",
+          "hint": "e.g. 0.62"
+        }
+      },
+      {
+        "text": "**Reverse:** swap the probes.",
+        "reading": {
+          "key": "rev",
+          "label": "Reverse",
+          "unit": "V",
+          "hint": "OL"
+        }
+      }
+    ],
+    "expect": {
+      "text": "0.5 to 0.8 V forward (0.15 to 0.45 V for a Schottky), OL reverse.",
+      "basis": "rule_of_thumb",
+      "source": "Fluke, How to test diodes"
+    },
+    "limits": "In circuit, a part in parallel can lower both readings. A low reading both ways needs one end lifted to be sure.",
+    "answers": [
+      {
+        "id": "shorted",
+        "label": "Under 0.1 V both ways: shorted",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "fwd",
+            "max": 0.1
+          },
+          {
+            "reading": "rev",
+            "max": 0.1
+          }
+        ]
+      },
+      {
+        "id": "open",
+        "label": "OL both ways: open",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "fwd",
+            "is": "OL"
+          },
+          {
+            "reading": "rev",
+            "is": "OL"
+          }
+        ]
+      },
+      {
+        "id": "good",
+        "label": "A junction one way, OL the other",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "fwd",
+            "min": 0.1,
+            "max": 0.9
+          },
+          {
+            "reading": "rev",
+            "is": "OL"
+          }
+        ]
+      },
+      {
+        "id": "leaky",
+        "label": "Something else (low both ways, unequal)",
+        "outcome": "inconclusive"
+      }
+    ]
+  },
+  "led": {
+    "title": "LED: junction test",
+    "applies_to": ["led"],
+    "goal": "An LED is a diode with a higher forward voltage. Most meters make a red, green or yellow LED glow faintly in diode mode.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.** Meter on diode mode."
+      },
+      {
+        "text": "**Forward:** red probe on the anode (the longer leg, or the side without the mark), black on the cathode. Watch whether it glows.",
+        "reading": {
+          "key": "fwd",
+          "label": "Forward",
+          "unit": "V",
+          "hint": "e.g. 1.85"
+        }
+      },
+      {
+        "text": "**Reverse:** swap the probes.",
+        "reading": {
+          "key": "rev",
+          "label": "Reverse",
+          "unit": "V",
+          "hint": "OL"
+        }
+      }
+    ],
+    "expect": {
+      "text": "Red, yellow and green: 1.5 to 2.2 V forward, often a faint glow. Blue and white: 2.6 to 3.5 V, which some meters cannot reach (they show OL). OL reverse.",
+      "basis": "rule_of_thumb"
+    },
+    "answers": [
+      {
+        "id": "shorted",
+        "label": "Under 0.3 V both ways: shorted",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "fwd",
+            "max": 0.3
+          },
+          {
+            "reading": "rev",
+            "max": 0.3
+          }
+        ]
+      },
+      {
+        "id": "good",
+        "label": "A forward voltage, OL reverse",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "fwd",
+            "min": 1.3,
+            "max": 3.6
+          },
+          {
+            "reading": "rev",
+            "is": "OL"
+          }
+        ]
+      },
+      {
+        "id": "ol-both",
+        "label": "OL both ways",
+        "outcome": "inconclusive",
+        "when": [
+          {
+            "reading": "fwd",
+            "is": "OL"
+          },
+          {
+            "reading": "rev",
+            "is": "OL"
+          }
+        ]
+      },
+      {
+        "id": "odd",
+        "label": "Something else",
+        "outcome": "inconclusive"
+      }
+    ]
+  },
+  "bjt": {
+    "title": "Bipolar transistor: junctions",
+    "applies_to": ["transistor"],
+    "goal": "A bipolar transistor is two diodes sharing the base. Exactly two of the six readings conduct, both through the base, and collector to emitter never does.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.** Meter on diode mode. Find B, C and E from the pinout (SOT-23 is usually 1 = B, 2 = E, 3 = C)."
+      },
+      {
+        "text": "**Base to emitter:** NPN: red on the base, black on the emitter (PNP: the other way).",
+        "reading": {
+          "key": "be",
+          "label": "B to E",
+          "unit": "V",
+          "hint": "e.g. 0.68"
+        }
+      },
+      {
+        "text": "**Base to collector:** same polarity, black on the collector.",
+        "reading": {
+          "key": "bc",
+          "label": "B to C",
+          "unit": "V",
+          "hint": "e.g. 0.66"
+        }
+      },
+      {
+        "text": "**Swap the probes on both junctions:** both should read OL. Note the lowest.",
+        "reading": {
+          "key": "rev",
+          "label": "Junctions reversed",
+          "unit": "V",
+          "hint": "OL"
+        }
+      },
+      {
+        "text": "**Collector to emitter, both ways.** Note the lowest.",
+        "reading": {
+          "key": "ce",
+          "label": "C to E",
+          "unit": "V",
+          "hint": "OL"
+        }
+      }
+    ],
+    "expect": {
+      "text": "0.5 to 0.8 V on both junctions forward, OL reversed, OL collector to emitter.",
+      "basis": "rule_of_thumb",
+      "source": "Kuphaldt, Meter check of a transistor"
+    },
+    "limits": "In circuit this is a screen: a base resistor or a load in parallel can lower the readings.",
+    "answers": [
+      {
+        "id": "ce-short",
+        "label": "Collector to emitter conducts: shorted",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "ce",
+            "max": 0.3
+          }
+        ]
+      },
+      {
+        "id": "junction-short",
+        "label": "A junction reads under 0.1 V: shorted",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "be",
+            "max": 0.1
+          }
+        ]
+      },
+      {
+        "id": "open",
+        "label": "Base to emitter OL: open",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "be",
+            "is": "OL"
+          }
+        ]
+      },
+      {
+        "id": "good",
+        "label": "Two junctions, the rest OL",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "be",
+            "min": 0.4,
+            "max": 0.9
+          },
+          {
+            "reading": "bc",
+            "min": 0.4,
+            "max": 0.9
+          },
+          {
+            "reading": "rev",
+            "is": "OL"
+          },
+          {
+            "reading": "ce",
+            "is": "OL"
+          }
+        ]
+      },
+      {
+        "id": "odd",
+        "label": "Something else",
+        "outcome": "inconclusive"
+      }
+    ]
+  },
+  "mosfet": {
+    "title": "MOSFET: body diode and gate",
+    "applies_to": [],
+    "goal": "A MOSFET shows one diode (its body diode) between source and drain, and nothing at all at its gate.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.** Meter on diode mode. Touch gate and source together with a probe tip to discharge the gate."
+      },
+      {
+        "text": "**Body diode:** N-channel: red on the source, black on the drain (P-channel: the other way).",
+        "reading": {
+          "key": "body",
+          "label": "Body diode",
+          "unit": "V",
+          "hint": "e.g. 0.5"
+        }
+      },
+      {
+        "text": "**Drain to source, the other way.**",
+        "reading": {
+          "key": "ds",
+          "label": "Drain to source",
+          "unit": "V",
+          "hint": "OL"
+        }
+      },
+      {
+        "text": "**Gate to drain and gate to source, both ways.** Note the lowest.",
+        "reading": {
+          "key": "gate",
+          "label": "Gate to anything",
+          "unit": "V",
+          "hint": "OL"
+        }
+      }
+    ],
+    "expect": {
+      "text": "Body diode 0.4 to 0.9 V, OL the other way, OL from the gate.",
+      "basis": "rule_of_thumb"
+    },
+    "answers": [
+      {
+        "id": "ds-short",
+        "label": "Drain to source low both ways: shorted",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "body",
+            "max": 0.2
+          },
+          {
+            "reading": "ds",
+            "max": 0.2
+          }
+        ]
+      },
+      {
+        "id": "gate",
+        "label": "The gate conducts: damaged gate",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "gate",
+            "max": 2
+          }
+        ]
+      },
+      {
+        "id": "good",
+        "label": "Body diode one way, the rest OL",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "body",
+            "min": 0.3,
+            "max": 0.9
+          },
+          {
+            "reading": "ds",
+            "is": "OL"
+          },
+          {
+            "reading": "gate",
+            "is": "OL"
+          }
+        ]
+      },
+      {
+        "id": "odd",
+        "label": "Something else",
+        "outcome": "inconclusive"
+      }
+    ]
+  },
+  "inductor": {
+    "title": "Inductor or ferrite: continuity",
+    "applies_to": ["inductor"],
+    "goal": "An inductor is a coil: it reads a low resistance end to end. It fails open.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.** Meter on Ω; touch the probes together and note the leads.",
+        "reading": {
+          "key": "leads",
+          "label": "Probes touching",
+          "unit": "Ω",
+          "optional": true
+        }
+      },
+      {
+        "text": "**One probe on each end.**",
+        "reading": {
+          "key": "ohms",
+          "label": "End to end",
+          "unit": "Ω",
+          "hint": "e.g. 0.3"
+        }
+      }
+    ],
+    "expect": {
+      "text": "Power inductors and ferrite beads: under 1 Ω. Through-hole chokes: 1 to 50 Ω.",
+      "basis": "rule_of_thumb"
+    },
+    "limits": "A shorted turn or a cracked core still reads fine: it needs an LCR meter.",
+    "answers": [
+      {
+        "id": "open",
+        "label": "OL: open",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "ohms",
+            "is": "OL"
+          }
+        ]
+      },
+      {
+        "id": "good",
+        "label": "A low resistance",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 100
+          }
+        ]
+      },
+      {
+        "id": "odd",
+        "label": "Higher than expected",
+        "outcome": "inconclusive"
+      }
+    ]
+  },
+  "switch": {
+    "title": "Switch or button: contacts",
+    "applies_to": ["switch"],
+    "goal": "A switch must read near 0 Ω when closed and open when released, steadily.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.** Meter on Ω, one probe on each contact."
+      },
+      {
+        "text": "**Released (or OFF):** note the reading. On the board it may read the circuit around it instead of OL.",
+        "reading": {
+          "key": "open",
+          "label": "Released",
+          "unit": "Ω",
+          "hint": "OL"
+        }
+      },
+      {
+        "text": "**Pressed (or ON):** hold it and note the reading. Press several times: it should be steady.",
+        "reading": {
+          "key": "closed",
+          "label": "Pressed",
+          "unit": "Ω",
+          "hint": "e.g. 0.2"
+        }
+      }
+    ],
+    "answers": [
+      {
+        "id": "stuck",
+        "label": "Near 0 Ω even when released: stuck closed",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "open",
+            "max": 2
+          }
+        ]
+      },
+      {
+        "id": "no-contact",
+        "label": "Pressed reads over 10 Ω: worn or dirty contacts",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "closed",
+            "min": 10
+          }
+        ]
+      },
+      {
+        "id": "good",
+        "label": "Near 0 Ω pressed, high released",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "closed",
+            "max": 2
+          }
+        ]
+      }
+    ]
+  },
+  "ic-pins": {
+    "title": "Integrated circuit: supply and output pins",
+    "applies_to": ["ic"],
+    "goal": "A meter cannot prove a chip works, but a shorted supply or output stage shows up. Compare pins of the same kind with each other.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.** Find pin 1 (a dot or dimple; pins count anticlockwise seen from above) and the datasheet's supply, ground and output pins."
+      },
+      {
+        "text": "**Look at it:** a crack or bulge in the package, a burn mark, bridged or lifted pins."
+      },
+      {
+        "text": "**Supply to ground:** meter on Ω, black on a ground pin, red on the supply pin. Wait for the reading to settle.",
+        "reading": {
+          "key": "supply",
+          "label": "Supply pin to ground",
+          "unit": "Ω",
+          "hint": "e.g. 2.3k, or 0.4"
+        }
+      },
+      {
+        "text": "**Each output pin to ground and to the supply pin, both probe directions.** Note the lowest reading.",
+        "reading": {
+          "key": "outputs",
+          "label": "Lowest output reading",
+          "unit": "Ω",
+          "hint": "e.g. 600, or 0.5",
+          "optional": true
+        }
+      }
+    ],
+    "limits": "No short found does not mean the chip works.",
+    "answers": [
+      {
+        "id": "supply-short",
+        "label": "Supply to ground under 2 Ω",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "supply",
+            "max": 2
+          }
+        ]
+      },
+      {
+        "id": "output-short",
+        "label": "An output under 2 Ω",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "outputs",
+            "max": 2
+          }
+        ]
+      },
+      {
+        "id": "no-short",
+        "label": "No short found",
+        "outcome": "inconclusive",
+        "when": [
+          {
+            "reading": "supply",
+            "min": 2
+          }
+        ]
+      }
+    ]
+  },
+  "wire": {
+    "title": "Wire or pad: continuity",
+    "applies_to": ["pad"],
+    "goal": "Check a wire and its joint end to end, and that it does not touch its neighbours.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.** Look at the joint: dull, cracked or balled solder, broken strands at the pad."
+      },
+      {
+        "text": "**Meter on Ω, one probe on the pad, the other on the wire's far end.** Wiggle the wire while watching.",
+        "reading": {
+          "key": "ohms",
+          "label": "Pad to far end",
+          "unit": "Ω",
+          "hint": "e.g. 0.2"
+        }
+      },
+      {
+        "text": "**This pad to the next pad or wire.**",
+        "reading": {
+          "key": "short",
+          "label": "To the neighbour",
+          "unit": "Ω",
+          "hint": "OL",
+          "optional": true
+        }
+      }
+    ],
+    "answers": [
+      {
+        "id": "broken",
+        "label": "Over 2 Ω, or it flickers: broken",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "ohms",
+            "min": 2
+          }
+        ]
+      },
+      {
+        "id": "touching",
+        "label": "Connected to the neighbour",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "short",
+            "max": 2
+          }
+        ]
+      },
+      {
+        "id": "good",
+        "label": "Under 2 Ω and steady",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 2
+          }
+        ]
+      }
+    ]
+  },
+  "motor": {
+    "title": "DC motor: winding",
+    "applies_to": ["motor"],
+    "goal": "A small brushed motor reads a few ohms at every position of its shaft. Open at one position is a worn brush or a broken winding; near 0 everywhere is a short.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power and disconnect the motor** from the board (both wires)."
+      },
+      {
+        "text": "**Meter on Ω across the motor's two terminals.** Turn the shaft slowly by hand through a full turn, watching the reading. Note the lowest.",
+        "reading": {
+          "key": "rmin",
+          "label": "Lowest",
+          "unit": "Ω",
+          "hint": "e.g. 2.1"
+        }
+      },
+      {
+        "text": "**And the highest** you saw during the turn.",
+        "reading": {
+          "key": "rmax",
+          "label": "Highest",
+          "unit": "Ω",
+          "hint": "e.g. 3.4"
+        }
+      }
+    ],
+    "limits": "Brush contact makes the meter read high; a single shorted turn does not show.",
+    "answers": [
+      {
+        "id": "open",
+        "label": "OL at some position: open",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "rmax",
+            "is": "OL"
+          }
+        ]
+      },
+      {
+        "id": "shorted",
+        "label": "Under 0.3 Ω everywhere: shorted",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "rmax",
+            "max": 0.3
+          }
+        ]
+      },
+      {
+        "id": "good",
+        "label": "A few ohms everywhere",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "rmin",
+            "min": 0.3
+          },
+          {
+            "reading": "rmax",
+            "max": 100
+          }
+        ]
+      },
+      {
+        "id": "odd",
+        "label": "Something else",
+        "outcome": "inconclusive"
+      }
+    ]
+  },
+  "fuse": {
+    "title": "Fuse: continuity",
+    "applies_to": ["fuse"],
+    "goal": "A fuse is a wire: near 0 Ω when good, open when blown. A blown fuse is a symptom: something downstream drew too much.",
+    "instruments": ["multimeter"],
+    "power": "off",
+    "steps": [
+      {
+        "text": "**Unplug the power.** Meter on Ω, one probe on each end.",
+        "reading": {
+          "key": "ohms",
+          "label": "End to end",
+          "unit": "Ω",
+          "hint": "e.g. 0.1"
+        }
+      }
+    ],
+    "answers": [
+      {
+        "id": "blown",
+        "label": "OL: blown",
+        "outcome": "fail",
+        "when": [
+          {
+            "reading": "ohms",
+            "is": "OL"
+          }
+        ]
+      },
+      {
+        "id": "good",
+        "label": "Under 1 Ω",
+        "outcome": "pass",
+        "when": [
+          {
+            "reading": "ohms",
+            "max": 1
+          }
+        ]
+      },
+      {
+        "id": "odd",
+        "label": "Something else",
+        "outcome": "inconclusive"
+      }
+    ]
+  }
+}

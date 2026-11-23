@@ -1,0 +1,175 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* The palette, radius and font follow Kandev (github.com/kdlbs/kandev, apps/packages/theme):
+ * neutral greys, an indigo primary, and status colours as tokens. Hovers use `muted`; `accent`
+ * is a real accent (violet). */
+@theme inline {
+  --font-sans: "Figtree Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+}
+
+:root {
+  --radius: 0.375rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.51 0.23 277);
+  --primary-foreground: oklch(0.96 0.02 272);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.68 0.18 276);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.58 0.22 27);
+  --destructive-foreground: oklch(0.96 0.02 27);
+  --success: oklch(0.58 0.12 150);
+  --success-foreground: oklch(0.982 0.01 150);
+  --warning: oklch(0.7 0.13 78);
+  --warning-foreground: oklch(0.23 0.035 72);
+  --info: oklch(0.58 0.12 205);
+  --info-foreground: oklch(0.982 0.01 205);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --photo-bg: oklch(0.95 0 0);
+  --scene-bg: radial-gradient(oklch(0.97 0 0), oklch(0.85 0 0));
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.59 0.2 277);
+  --primary-foreground: oklch(0.96 0.02 272);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.62 0.18 276);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --success: oklch(0.68 0.12 150);
+  --success-foreground: oklch(0.16 0.025 150);
+  --warning: oklch(0.78 0.12 78);
+  --warning-foreground: oklch(0.19 0.035 72);
+  --info: oklch(0.7 0.11 205);
+  --info-foreground: oklch(0.16 0.025 205);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --photo-bg: oklch(0.18 0 0);
+  --scene-bg: radial-gradient(oklch(0.3 0 0), oklch(0.17 0 0));
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground; }
+  /* a hand over whatever can be clicked (Tailwind 4 gives buttons the default arrow) */
+  a, button:not(:disabled), [role="button"]:not([aria-disabled="true"]), summary, select:not(:disabled),
+  label:has(> button[role="switch"]:not(:disabled)), label:has(> button[role="checkbox"]:not(:disabled)) { cursor: pointer; }
+}
+
+/* ---- board photo overlays (SVG) */
+@layer components {
+  .viewport.zoomed .stage svg { cursor: grab; }
+  .viewport.panning .stage svg, .viewport.panning .stage svg * { cursor: grabbing !important; }
+  .stage.drawing svg { cursor: crosshair; }
+  .box { fill: transparent; stroke: #94a3b8; stroke-width: 2; cursor: pointer; vector-effect: non-scaling-stroke; }
+  .box.unknown { stroke-dasharray: 5 4; }
+  .box:hover { fill: color-mix(in oklab, var(--primary) 20%, transparent); }
+  .dim .box { opacity: 0.25; }
+  .dim .box.hit { opacity: 1; stroke-width: 3.5; fill: rgb(255 255 255 / 0.15); }
+  .tag { font: 600 13px var(--font-sans); fill: #fff; paint-order: stroke; stroke: #000; stroke-width: 3px; pointer-events: none; display: none; }
+  .dim .tag.hit, .showtags .tag { display: block; }
+  .trace { fill: none; stroke: #c2410c; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; cursor: pointer; }
+  .trace-halo { fill: none; stroke: rgb(255 255 255 / 0.75); stroke-width: 6; vector-effect: non-scaling-stroke; pointer-events: none; }
+  .dim .trace { opacity: 0.25; }
+  .dim .trace.hit { opacity: 1; stroke: #f59e0b; stroke-width: 5; }
+  .trace.sel { stroke: var(--primary); stroke-width: 5; opacity: 1; }
+  .notraces .trace, .notraces .trace-halo { display: none; }
+  .handle { fill: #fff; stroke: var(--primary); stroke-width: 2.5; vector-effect: non-scaling-stroke; cursor: grab; }
+  .handle.mid { fill: color-mix(in oklab, var(--primary) 25%, white); cursor: copy; }
+  .editbox { fill: color-mix(in oklab, var(--primary) 12%, transparent); stroke: var(--primary); stroke-width: 2.5; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; cursor: move; }
+  .draft { fill: none; stroke: var(--primary); stroke-width: 3; stroke-dasharray: 7 5; vector-effect: non-scaling-stroke; pointer-events: none; }
+}
+
+/* ---- 3D labels, diagrams, schematic editor */
+@layer components {
+  .lbl3d { position: absolute; transform: translate(-50%, -120%); font: 600 11.5px var(--font-sans); color: #fff; background: rgb(15 23 42 / 0.8); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+  .lbl3d.hit { background: var(--primary); }
+  #schem svg { width: calc(var(--z, 1) * 100%); }
+  .diagram svg { width: 100%; max-width: 1300px; height: auto; display: block; margin: auto; }
+  .diagram .block { cursor: pointer; }
+  .diagram .block:hover rect { stroke-width: 3; }
+  .sch-body { fill: #ffffc2; stroke: #840000; stroke-width: 0.254; }
+  .sch-pin { stroke: #840000; stroke-width: 0.2; }
+  .sch-ref, .sch-val, .sch-pnum, .sch-pname, .sch-ptext, .sch-hdr { font-family: system-ui, sans-serif; pointer-events: none; }
+  .sch-ref { font-size: 1.4px; fill: #006464; }
+  .sch-val { font-size: 1.2px; fill: #006464; }
+  .sch-pnum { font-size: 1px; fill: #a90000; }
+  .sch-pname { font-size: 1px; fill: #006464; }
+  .sch-ptext { font-size: 1.2px; fill: #840000; }
+  .sch-hdr { font-size: 2.6px; font-weight: 700; fill: #0000c2; }
+  .sch-part { cursor: move; }
+  .sch-part.sel .sch-body { stroke: var(--primary); stroke-width: 0.6; }
+  .sch-wire { fill: none; stroke-width: 0.35; cursor: pointer; }
+  .sch-wire.sel { stroke-width: 0.8; }
+  .sch-junction { fill: #008400; }
+  .sch-end { fill: transparent; stroke: none; }
+  .sch-end.loose { stroke: #f59e0b; stroke-width: 0.35; }
+  .sch-pwr { fill: none; stroke-width: 0.254; }
+  .sch-power { cursor: pointer; }
+  .sch-power.sel .sch-pwr { stroke: var(--primary); stroke-width: 0.6; }
+  .sch-auto { opacity: 0.35; pointer-events: none; }
+  .sch-draft { fill: none; stroke: var(--primary); stroke-width: 0.3; stroke-dasharray: 0.8 0.5; pointer-events: none; }
+}

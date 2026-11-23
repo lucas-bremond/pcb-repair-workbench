@@ -1,0 +1,3924 @@
+{
+  "format": "pcb-plan",
+  "version": 2,
+  "revision": 7,
+  "date": "2026-11-22",
+  "based_on": {
+    "model": "sha256:0681b4cf67cc5054",
+    "observations": "O15",
+    "instructions": null,
+    "results": "R32",
+    "voided": 0
+  },
+  "summary": "U2, the 3.3 V regulator, gets 4.86 V in, gives 2.07 V out, and stays cool at idle (R25, R28, R31): it is not feeding an overload, so U2 itself is failing. That leaves the microcontroller running near its lower limit, which explains every button resetting the unit. This round replaces U2 with hot air, checks the new one gives 3.3 V, and runs the original test, buttons and motor, several times.",
+  "warning": "Until U2 is replaced, press a button only when a step asks: every one of them resets the unit. Hot air: keep the nozzle on U2, low air flow, and let the board cool before touching it.",
+  "findings": [
+    {
+      "id": "F1",
+      "title": "Failure mode: brownout reset",
+      "text": "Move and Shooting Star both make the microcontroller switch the motor output on. Something then pulls the supply down far enough to reset the microcontroller, which restarts with the lamp on and every function off.",
+      "evidence": ["O1", "O2", "O6"]
+    },
+    {
+      "id": "F2",
+      "title": "Not the adapter",
+      "text": "Normal draw is about 1 A (5 W at 5 V), and a 4 A adapter changes nothing: the overload is inside the unit.",
+      "evidence": ["O3", "O5"]
+    },
+    {
+      "id": "F3",
+      "title": "Both buttons go through the motor path",
+      "text": "Shooting stars only run while the dome rotates, and their mechanism depends on the motor turning.",
+      "evidence": ["O5", "O8"]
+    },
+    {
+      "id": "F4",
+      "title": "Not the motor",
+      "text": "With the motor's `M+` wire disconnected, Shooting Star still resets the unit.",
+      "evidence": ["O9"]
+    },
+    {
+      "id": "F5",
+      "title": "No visible damage",
+      "text": "On either side of the board, including close-ups of the motor driver area, and under a magnifier around U4: its pins, D10, D11, C6, C7, C9, R13 and the motor pads.",
+      "evidence": ["O7", "O10", "R2"]
+    },
+    {
+      "id": "F6",
+      "title": "The motor driver is U4, a Mixic MX08L",
+      "text": "A single H-bridge in SOP-8. Its datasheet lists thermal shutdown but no short-circuit protection. With both inputs low its outputs are off, so a shorted output stage stays quiet at idle and only shorts the supply once the microcontroller drives an input, which matches the symptom.",
+      "evidence": ["O10"]
+    },
+    {
+      "id": "F7",
+      "title": "Timer resets the unit too",
+      "text": "Timer does not use the motor, yet pressing it resets the unit like Move. The fault is not specific to the motor output: it follows a button press, or any small change of load.",
+      "evidence": ["R18"]
+    },
+    {
+      "id": "F8",
+      "title": "Nothing on U4's side is shorted, power off",
+      "text": "U4's motor supply reads OL to ground, its outputs read megohms to ground and to the supply, OUTA and OUTB alike, and D10 and D11 are good diodes. A static pass does not clear U4 of a weak output (on-resistance), but nothing there explains a reset on Timer.",
+      "evidence": ["R7", "R9", "R10", "R11"]
+    },
+    {
+      "id": "F9",
+      "title": "C7 is on U4's motor supply",
+      "text": "0 Ω between U4 pin 4 and C7's `+` lead: that connection is now measured.",
+      "evidence": ["R16"]
+    },
+    {
+      "id": "F10",
+      "title": "U4's supply is not wired straight to the DC+ pad",
+      "text": "8.6 MΩ between U4 pin 4 and DC+ with the power off. Probably through the power switch S1, which may have been OFF: the switch position was not recorded.",
+      "evidence": ["R17"]
+    },
+    {
+      "id": "F11",
+      "title": "D13 reads unlike its twin D12",
+      "text": "D12 reads 0.573 V forward and OL reverse, a good diode. D13, the same glass type and right beside the 3.3 V regulator U2, reads 0.356 V forward and 0.457 V reverse. D15 reads 0.859 V reverse and D16 0.569 V reverse. In circuit, a parallel path can lower both readings: D13 is suspect, and only lifting one end settles it.",
+      "evidence": ["R12", "R13", "R14", "R15"]
+    },
+    {
+      "id": "F12",
+      "title": "Four resistors read their marked value",
+      "text": "R3 68 Ω, R12 1 kΩ, R17 10 kΩ, and R13 0 Ω (the link from OUTA to M-).",
+      "evidence": ["R4", "R5", "R6", "R8"]
+    },
+    {
+      "id": "F13",
+      "title": "The 3.3 V supply is at 2.07 V at idle",
+      "text": "A 3.3 V regulator (U2, marked 6206A …33) should give 3.135 to 3.465 V. At 2.07 V the microcontroller is close to the voltage where it stops working, so any extra load (a button's LED, the motor) can reset it. With the power off the same supply reads 10 kΩ to ground, not a short: either U2 gets too little at its input, U2 itself is weak, or something on the 3.3 V supply draws current only once powered (an IC, a leaky D13). This reading assumes U2 pin 1 is ground, as the datasheet says; the next round checks it.",
+      "evidence": ["R22", "R25"]
+    },
+    {
+      "id": "F14",
+      "title": "The three buttons open and close cleanly",
+      "text": "SW1 is Timer, SW2 Move and SW3 Shooting Star. Each reads 0 Ω pressed and OL or megohms released: the megohms are the microcontroller's input around the button, not a leak.",
+      "evidence": ["R19", "R20", "R21"]
+    },
+    {
+      "id": "F15",
+      "title": "The 5 V supply reads 72 Ω to ground, power off",
+      "text": "Low for a supply, but not a short, and the same with the switch ON or OFF. Expected with the switch: with the adapter unplugged nothing else sits on the input side. Compared later with the powered readings.",
+      "evidence": ["R23"]
+    },
+    {
+      "id": "F16",
+      "title": "U4's supply does not come from the DC+ pad",
+      "text": "8.7 MΩ between U4 pin 4 and DC+ with the switch ON, as with it OFF (8.6 MΩ). U4 is fed another way: through a part, or from the third input wire (R1B). Left for later: U4 cannot explain the resets on Timer.",
+      "evidence": ["R17", "R24"]
+    },
+    {
+      "id": "F17",
+      "title": "U2 has a good input and a low output",
+      "text": "5.04 V reaches the board (R27) and 4.86 V reaches U2's input (R28), with U2 pin 1 confirmed as ground (R26). A 3.3 V regulator with 4.86 V in should give 3.3 V; it gives 2.07 V (R25). So the fault is U2 itself, or a load on its output that it cannot feed.",
+      "evidence": ["R25", "R26", "R27", "R28"]
+    },
+    {
+      "id": "F18",
+      "title": "U2 stays cool at idle",
+      "text": "Nothing on the 3.3 V side feels warmer than the rest of the board after two minutes at idle. An overload strong enough to pull a 3.3 V regulator down to 2.07 V would make it hot: U2 is not feeding an overload, it is failing.",
+      "evidence": ["R31"]
+    },
+    {
+      "id": "F19",
+      "title": "D13 is U2's protection diode",
+      "text": "Powered, D13's band end reads 4.84 V (U2's input) and its other end 2.09 V (U2's output). It runs from the 3.3 V side up to the 5 V side, the usual protection for a regulator. A leak there would raise the 3.3 V, not lower it: D13 is not the cause, and its low readings on the board (R13) came from U2 and the parts around it.",
+      "evidence": ["R13", "R32"]
+    }
+  ],
+  "suspects": [
+    {
+      "id": "S9",
+      "title": "U2, the 3.3 V regulator, weak or failing",
+      "parts": ["U2"],
+      "mode": "degraded",
+      "status": "open",
+      "why": "Good input (4.86 V), low output (2.07 V), and cool at idle (F17, F18): a regulator that has failed, not one feeding an overload. Replacing it settles it.",
+      "evidence": {
+        "for": ["R25", "R28", "R31"],
+        "against": []
+      }
+    },
+    {
+      "id": "S12",
+      "title": "A part on the 3.3 V supply draws too much once powered (the microcontroller U1, C1, D13 or something not in the model)",
+      "parts": ["U1", "C1"],
+      "mode": "short",
+      "status": "open",
+      "why": "Less likely: an overload strong enough to pull U2 down would make it hot, and it stays cool (F18). If a new U2 still gives about 2 V, this comes back first.",
+      "evidence": {
+        "for": ["R25"],
+        "against": ["R31"]
+      }
+    },
+    {
+      "id": "S5",
+      "title": "The button press itself (board flex, a cracked joint, or the button circuit)",
+      "parts": ["SW1", "SW2", "SW3"],
+      "mode": "connection",
+      "status": "open",
+      "why": "The buttons themselves read clean (F14), and the low 3.3 V supply explains every press resetting the unit. Board flex is still untested.",
+      "evidence": {
+        "for": ["R18"],
+        "against": ["R19", "R20", "R21"]
+      }
+    },
+    {
+      "id": "S6",
+      "title": "Something not in the model",
+      "mode": "other",
+      "status": "open",
+      "why": "Many pins are still unknown (45 of 171 are on a net), including all of the buttons' and the microcontroller's."
+    },
+    {
+      "id": "S1",
+      "title": "U4 (MX08L motor driver) failed internally",
+      "parts": ["U4"],
+      "mode": "short",
+      "status": "open",
+      "why": "Nothing reads shorted with the power off (F8), and Timer, which does not use U4, resets too (F7). Kept open only because a static test cannot clear a driver.",
+      "evidence": {
+        "for": ["O9", "O10"],
+        "against": ["R7", "R9", "R18"]
+      }
+    },
+    {
+      "id": "S3",
+      "title": "C7, the 47 µF capacitor on U4's supply, shorted or worn",
+      "parts": ["C7"],
+      "mode": "degraded",
+      "status": "open",
+      "why": "Not shorted (R7). A worn C7 could only matter on a motor start, not on Timer.",
+      "evidence": {
+        "for": [],
+        "against": ["R7", "R18"]
+      }
+    },
+    {
+      "id": "S4",
+      "title": "Wiring: the `M-` wire or the shooting-star LED wires shorted in the harness",
+      "parts": ["J_MN", "J_SSLP", "J_SSLN"],
+      "mode": "connection",
+      "status": "open",
+      "why": "Would only matter when the motor or the shooting-star LED switches on, not on Timer.",
+      "evidence": {
+        "for": [],
+        "against": ["R18"]
+      }
+    },
+    {
+      "id": "S10",
+      "title": "D13 leaky or shorted, beside the 3.3 V regulator",
+      "parts": ["D13"],
+      "mode": "short",
+      "status": "ruled_out",
+      "why": "D13 runs from the 3.3 V side to the 5 V side (F19): a leak would raise the 3.3 V, not lower it.",
+      "evidence": {
+        "for": ["R13"],
+        "against": ["R32"]
+      }
+    },
+    {
+      "id": "S2",
+      "title": "D10 or D11 shorted, if they are U4's protection diodes",
+      "parts": ["D10", "D11"],
+      "mode": "short",
+      "status": "ruled_out",
+      "why": "Both read as good diodes.",
+      "evidence": {
+        "for": [],
+        "against": ["R10", "R11"]
+      }
+    },
+    {
+      "id": "S7",
+      "title": "The power adapter",
+      "mode": "dead",
+      "status": "ruled_out",
+      "why": "Same reset with a 5 V 2 A and a 5 V 4 A adapter.",
+      "evidence": {
+        "for": [],
+        "against": ["O3"]
+      }
+    },
+    {
+      "id": "S8",
+      "title": "The motor",
+      "mode": "short",
+      "status": "ruled_out",
+      "why": "Same reset with `M+` disconnected.",
+      "evidence": {
+        "for": [],
+        "against": ["O9"]
+      }
+    },
+    {
+      "id": "S11",
+      "title": "U2's input is too low (the 5 V feed to the regulator, or a part in series with it)",
+      "parts": ["U2"],
+      "mode": "open",
+      "status": "ruled_out",
+      "why": "U2's input reads 4.86 V (R28).",
+      "evidence": {
+        "for": [],
+        "against": ["R28"]
+      }
+    }
+  ],
+  "assessment": {
+    "C7": {
+      "status": "cleared",
+      "of": "short",
+      "evidence": ["R7"]
+    },
+    "C9": {
+      "status": "cleared",
+      "of": "short",
+      "evidence": ["R7"],
+      "note": "If it is on U4's supply, as the model assumes."
+    },
+    "U4": {
+      "status": "cleared",
+      "of": "short",
+      "evidence": ["R7", "R9"],
+      "note": "Power off only: a weak output passes this test."
+    },
+    "D10": {
+      "status": "ok",
+      "evidence": ["R10"]
+    },
+    "D11": {
+      "status": "ok",
+      "evidence": ["R11"]
+    },
+    "D12": {
+      "status": "ok",
+      "evidence": ["R12"]
+    },
+    "D13": {
+      "status": "ok",
+      "evidence": ["R32"],
+      "note": "Not cleared by a diode reading: its low readings in circuit came from the parts around it, and powered it sits where a leak could not lower the 3.3 V."
+    },
+    "D15": {
+      "status": "untestable",
+      "evidence": ["R14"],
+      "note": "Low reverse reading in circuit: a parallel path, most likely. Lift one end to be sure."
+    },
+    "D16": {
+      "status": "untestable",
+      "evidence": ["R15"],
+      "note": "Low reverse reading in circuit: a parallel path, most likely. Lift one end to be sure."
+    },
+    "R3": {
+      "status": "ok",
+      "evidence": ["R4"]
+    },
+    "R12": {
+      "status": "ok",
+      "evidence": ["R5"]
+    },
+    "R17": {
+      "status": "ok",
+      "evidence": ["R6"]
+    },
+    "R13": {
+      "status": "ok",
+      "evidence": ["R8"]
+    },
+    "C1": {
+      "status": "cleared",
+      "of": "short",
+      "evidence": ["R22"],
+      "note": "If it is on the 3.3 V supply, as the model assumes."
+    },
+    "SW1": {
+      "status": "ok",
+      "evidence": ["R19"]
+    },
+    "SW2": {
+      "status": "ok",
+      "evidence": ["R20"]
+    },
+    "SW3": {
+      "status": "ok",
+      "evidence": ["R21"]
+    },
+    "U2": {
+      "status": "suspect",
+      "evidence": ["R25", "R28", "R31"],
+      "note": "4.86 V in, 2.07 V out, cool at idle: most likely failed."
+    }
+  },
+  "protocols": {
+    "visual": {
+      "title": "Inspection",
+      "applies_to": [],
+      "goal": "Find visible damage before measuring or powering anything.",
+      "instruments": ["magnifier"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power** and take out any batteries."
+        },
+        {
+          "text": "**Light the area well** and look through the **magnifier**, close enough to see each pin of U4 on its own."
+        },
+        {
+          "text": "**Look for:** burn marks or brown patches, a bulged or leaking capacitor top, cracks in a part's body, green or white crust (corrosion), solder bridging two pins, a dull or cracked joint, a lifted pin, a loose wire."
+        },
+        {
+          "text": "**Smell it.** A burnt smell close to a part points to it."
+        }
+      ],
+      "limits": "Most failed parts look perfectly normal. Finding nothing proves nothing.",
+      "answers": [
+        {
+          "id": "damage",
+          "label": "I see damage (say where in the notes)",
+          "outcome": "fail"
+        },
+        {
+          "id": "clean",
+          "label": "Nothing visible",
+          "outcome": "pass"
+        },
+        {
+          "id": "unsure",
+          "label": "Something looks odd, not sure",
+          "outcome": "inconclusive"
+        }
+      ]
+    },
+    "rail-to-ground": {
+      "title": "Rail to ground: is it shorted?",
+      "applies_to": ["net"],
+      "goal": "One reading tells whether anything on this supply rail is shorted to ground. Every capacitor on the rail is in parallel, so a clean reading clears all of them of a short at once.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power** and wait a minute for the capacitors to discharge."
+        },
+        {
+          "text": "**Meter on Ω (resistance)**, not the beeper. **Touch the two probes together** and note the reading: the leads' own resistance.",
+          "reading": {
+            "key": "leads",
+            "label": "Probes touching",
+            "unit": "Ω",
+            "hint": "e.g. 0.2",
+            "optional": true
+          }
+        },
+        {
+          "text": "**Black probe on ground, red probe on the rail**, at the points the step shows. Hold them still for **five seconds**: the reading often starts low and climbs as the capacitors charge. Note it once it stops moving.",
+          "reading": {
+            "key": "ohms",
+            "label": "Rail to ground",
+            "unit": "Ω",
+            "hint": "e.g. 4.7k, 0.3, OL"
+          }
+        }
+      ],
+      "expect": {
+        "text": "Climbs past 1 kΩ, or to OL. On a small 5 V board, under 10 Ω and steady is a fault.",
+        "basis": "rule_of_thumb",
+        "source": "docs/research/board-repair-diagnosis.md, unpowered rail readings"
+      },
+      "limits": "Clears the rail's capacitors of a short only: not an open or worn capacitor, not a dead chip that is not shorted.",
+      "answers": [
+        {
+          "id": "short",
+          "label": "Under 1 Ω and steady: a hard short",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 1
+            }
+          ]
+        },
+        {
+          "id": "low",
+          "label": "1 to 10 Ω and steady",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 10
+            }
+          ]
+        },
+        {
+          "id": "between",
+          "label": "10 Ω to 1 kΩ and steady",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 1000
+            }
+          ]
+        },
+        {
+          "id": "ok",
+          "label": "Over 1 kΩ, or climbing to OL",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 1000
+            }
+          ]
+        }
+      ]
+    },
+    "continuity": {
+      "title": "Continuity between two points",
+      "applies_to": ["pins"],
+      "goal": "Whether two points are connected by copper. Also how the board model's connections become measured.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power.**"
+        },
+        {
+          "text": "**Meter on Ω**, not the beeper (meters beep up to 10 to 200 Ω, which hides a bad joint). Touch the probes together and note the leads' resistance.",
+          "reading": {
+            "key": "leads",
+            "label": "Probes touching",
+            "unit": "Ω",
+            "hint": "e.g. 0.2",
+            "optional": true
+          }
+        },
+        {
+          "text": "**One probe on each point** the step shows, pressing on the solder, not the varnish. Note the reading.",
+          "reading": {
+            "key": "ohms",
+            "label": "Between the two points",
+            "unit": "Ω",
+            "hint": "e.g. 0.3, OL"
+          }
+        }
+      ],
+      "expect": {
+        "text": "Under 2 Ω when connected by copper; OL when not. Anything in between goes through a part.",
+        "basis": "physics"
+      },
+      "answers": [
+        {
+          "id": "connected",
+          "label": "Under 2 Ω: connected",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 2
+            }
+          ]
+        },
+        {
+          "id": "through-a-part",
+          "label": "2 Ω to 100 kΩ: through a part",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 100000
+            }
+          ]
+        },
+        {
+          "id": "open",
+          "label": "Over 100 kΩ or OL: not connected",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 100000
+            }
+          ]
+        }
+      ]
+    },
+    "diode": {
+      "title": "Diode: junction test",
+      "applies_to": ["diode"],
+      "goal": "A diode conducts one way only. The meter's diode mode shows its forward voltage one way and OL the other.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power.** Meter on diode mode (the diode symbol)."
+        },
+        {
+          "text": "**Forward:** red probe on the anode, black on the cathode (the end with the band).",
+          "reading": {
+            "key": "fwd",
+            "label": "Forward",
+            "unit": "V",
+            "hint": "e.g. 0.62"
+          }
+        },
+        {
+          "text": "**Reverse:** swap the probes.",
+          "reading": {
+            "key": "rev",
+            "label": "Reverse",
+            "unit": "V",
+            "hint": "OL"
+          }
+        }
+      ],
+      "expect": {
+        "text": "0.5 to 0.8 V forward (0.15 to 0.45 V for a Schottky), OL reverse.",
+        "basis": "rule_of_thumb",
+        "source": "Fluke, How to test diodes"
+      },
+      "limits": "In circuit, a part in parallel can lower both readings. A low reading both ways needs one end lifted to be sure.",
+      "answers": [
+        {
+          "id": "shorted",
+          "label": "Under 0.1 V both ways: shorted",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "fwd",
+              "max": 0.1
+            },
+            {
+              "reading": "rev",
+              "max": 0.1
+            }
+          ]
+        },
+        {
+          "id": "open",
+          "label": "OL both ways: open",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "fwd",
+              "is": "OL"
+            },
+            {
+              "reading": "rev",
+              "is": "OL"
+            }
+          ]
+        },
+        {
+          "id": "good",
+          "label": "A junction one way, OL the other",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "fwd",
+              "min": 0.1,
+              "max": 0.9
+            },
+            {
+              "reading": "rev",
+              "is": "OL"
+            }
+          ]
+        },
+        {
+          "id": "leaky",
+          "label": "Something else (low both ways, unequal)",
+          "outcome": "inconclusive"
+        }
+      ]
+    },
+    "rail-voltage": {
+      "title": "Rail voltage, powered",
+      "applies_to": ["net"],
+      "goal": "Whether a supply rail is at its voltage, measured where it is used.",
+      "instruments": ["multimeter"],
+      "power": "on",
+      "steps": [
+        {
+          "text": "**Meter on DC volts** (V with a straight line). Clip or hold the **black probe on ground** before powering."
+        },
+        {
+          "text": "**Plug the power in** and switch the unit on. Keep your hand off the board except for the red probe."
+        },
+        {
+          "text": "**Red probe on the point the step shows.** Hold it steady; don't let it slip onto a neighbouring pin.",
+          "reading": {
+            "key": "volts",
+            "label": "Voltage",
+            "unit": "V",
+            "hint": "e.g. 4.97"
+          }
+        },
+        {
+          "text": "**Unplug the power** before moving on."
+        }
+      ],
+      "limits": "A multimeter shows an average: it cannot see a dip lasting a few milliseconds, such as the one behind a reset when a motor starts.",
+      "answers": [
+        {
+          "id": "zero",
+          "label": "Under 0.1 V: no voltage",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "volts",
+              "max": 0.1
+            }
+          ]
+        },
+        {
+          "id": "in-range",
+          "label": "Within the expected range",
+          "outcome": "pass"
+        },
+        {
+          "id": "low",
+          "label": "Below the expected range",
+          "outcome": "fail"
+        },
+        {
+          "id": "high",
+          "label": "Above the expected range",
+          "outcome": "fail"
+        }
+      ]
+    },
+    "resistor": {
+      "title": "Resistor: value",
+      "applies_to": ["resistor"],
+      "goal": "A resistor fails open or drifts high far more often than it shorts. On the board, other parts in parallel can only lower the reading: a reading above the marked value is real, a lower one is not proof.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power.** Read the marking: 3 digits (`472` = 47 × 10² = 4.7 kΩ), 4 digits (`1002` = 10 kΩ), or `R` for the decimal point (`R390` = 0.39 Ω)."
+        },
+        {
+          "text": "**Look at it:** a charred or cracked body, or a discoloured board under it."
+        },
+        {
+          "text": "**Meter on Ω.** Touch the probes together and note the leads' resistance (matters under 10 Ω).",
+          "reading": {
+            "key": "leads",
+            "label": "Probes touching",
+            "unit": "Ω",
+            "hint": "e.g. 0.2",
+            "optional": true
+          }
+        },
+        {
+          "text": "**One probe on each end** of the resistor. Note the reading once it settles.",
+          "reading": {
+            "key": "ohms",
+            "label": "Measured",
+            "unit": "Ω",
+            "hint": "e.g. 99.8, 4.7k, OL"
+          }
+        }
+      ],
+      "limits": "In circuit, a reading below the marked value is not a fault by itself: lift one end to be sure.",
+      "answers": [
+        {
+          "id": "open",
+          "label": "OL: open",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "is": "OL"
+            }
+          ]
+        },
+        {
+          "id": "in-tolerance",
+          "label": "Within the marked value's tolerance",
+          "outcome": "pass"
+        },
+        {
+          "id": "high",
+          "label": "Clearly above the marked value",
+          "outcome": "fail"
+        },
+        {
+          "id": "low",
+          "label": "Below the marked value (in circuit)",
+          "outcome": "inconclusive"
+        }
+      ]
+    },
+    "capacitor": {
+      "title": "Ceramic capacitor: short",
+      "applies_to": ["capacitor"],
+      "goal": "Ceramic capacitors fail shorted, often from a crack you cannot see. A meter tells shorted from not shorted; not the value.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power** and wait a minute."
+        },
+        {
+          "text": "**Look at it** under a magnifier: a crack across the body, or a chip at its ends."
+        },
+        {
+          "text": "**Meter on Ω, one probe on each end.** The reading climbs as it charges. Note it after five seconds.",
+          "reading": {
+            "key": "ohms",
+            "label": "Across it",
+            "unit": "Ω",
+            "hint": "OL, or e.g. 0.3"
+          }
+        }
+      ],
+      "limits": "On the board this reads the same as the whole rail it sits on: a short here may be any part on that rail.",
+      "answers": [
+        {
+          "id": "short",
+          "label": "Under 1 Ω and steady",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 1
+            }
+          ]
+        },
+        {
+          "id": "low",
+          "label": "1 Ω to 1 kΩ and steady",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 1000
+            }
+          ]
+        },
+        {
+          "id": "ok",
+          "label": "Climbs past 1 kΩ, or OL",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 1000
+            }
+          ]
+        }
+      ]
+    },
+    "electrolytic": {
+      "title": "Electrolytic capacitor: look and short",
+      "applies_to": ["electrolytic"],
+      "goal": "Electrolytics mostly wear out (their ESR rises), which a multimeter cannot see. It can find a shorted one and show the visible signs.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power.** Meter on DC volts across it (red on `+`, the side without the stripe): under 0.5 V before touching. Higher: discharge it through a 1 kΩ resistor.",
+          "reading": {
+            "key": "volts",
+            "label": "Voltage across it",
+            "unit": "V",
+            "hint": "e.g. 0.02",
+            "optional": true
+          }
+        },
+        {
+          "text": "**Look at the top and the base:** a domed top, brown crust or a stained board around it is a failed capacitor."
+        },
+        {
+          "text": "**Meter on Ω, red on `+`, black on `-`.** The reading should climb towards high values as it charges. Note it after ten seconds.",
+          "reading": {
+            "key": "ohms",
+            "label": "Across it",
+            "unit": "Ω",
+            "hint": "climbing, e.g. 12k, or 0.4"
+          }
+        }
+      ],
+      "limits": "A pass clears it of a short only. A worn capacitor (high ESR) reads normal here: only an ESR meter, or temporarily fitting a good one in parallel, can tell.",
+      "answers": [
+        {
+          "id": "short",
+          "label": "Under 1 Ω and steady",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 1
+            }
+          ]
+        },
+        {
+          "id": "low",
+          "label": "1 Ω to 1 kΩ and steady",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 1000
+            }
+          ]
+        },
+        {
+          "id": "not-shorted",
+          "label": "Climbs past 1 kΩ: not shorted",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 1000
+            }
+          ]
+        }
+      ]
+    },
+    "led": {
+      "title": "LED: junction test",
+      "applies_to": ["led"],
+      "goal": "An LED is a diode with a higher forward voltage. Most meters make a red, green or yellow LED glow faintly in diode mode.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power.** Meter on diode mode."
+        },
+        {
+          "text": "**Forward:** red probe on the anode (the longer leg, or the side without the mark), black on the cathode. Watch whether it glows.",
+          "reading": {
+            "key": "fwd",
+            "label": "Forward",
+            "unit": "V",
+            "hint": "e.g. 1.85"
+          }
+        },
+        {
+          "text": "**Reverse:** swap the probes.",
+          "reading": {
+            "key": "rev",
+            "label": "Reverse",
+            "unit": "V",
+            "hint": "OL"
+          }
+        }
+      ],
+      "expect": {
+        "text": "Red, yellow and green: 1.5 to 2.2 V forward, often a faint glow. Blue and white: 2.6 to 3.5 V, which some meters cannot reach (they show OL). OL reverse.",
+        "basis": "rule_of_thumb"
+      },
+      "answers": [
+        {
+          "id": "shorted",
+          "label": "Under 0.3 V both ways: shorted",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "fwd",
+              "max": 0.3
+            },
+            {
+              "reading": "rev",
+              "max": 0.3
+            }
+          ]
+        },
+        {
+          "id": "good",
+          "label": "A forward voltage, OL reverse",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "fwd",
+              "min": 1.3,
+              "max": 3.6
+            },
+            {
+              "reading": "rev",
+              "is": "OL"
+            }
+          ]
+        },
+        {
+          "id": "ol-both",
+          "label": "OL both ways",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "fwd",
+              "is": "OL"
+            },
+            {
+              "reading": "rev",
+              "is": "OL"
+            }
+          ]
+        },
+        {
+          "id": "odd",
+          "label": "Something else",
+          "outcome": "inconclusive"
+        }
+      ]
+    },
+    "bjt": {
+      "title": "Bipolar transistor: junctions",
+      "applies_to": ["transistor"],
+      "goal": "A bipolar transistor is two diodes sharing the base. Exactly two of the six readings conduct, both through the base, and collector to emitter never does.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power.** Meter on diode mode. Find B, C and E from the pinout (SOT-23 is usually 1 = B, 2 = E, 3 = C)."
+        },
+        {
+          "text": "**Base to emitter:** NPN: red on the base, black on the emitter (PNP: the other way).",
+          "reading": {
+            "key": "be",
+            "label": "B to E",
+            "unit": "V",
+            "hint": "e.g. 0.68"
+          }
+        },
+        {
+          "text": "**Base to collector:** same polarity, black on the collector.",
+          "reading": {
+            "key": "bc",
+            "label": "B to C",
+            "unit": "V",
+            "hint": "e.g. 0.66"
+          }
+        },
+        {
+          "text": "**Swap the probes on both junctions:** both should read OL. Note the lowest.",
+          "reading": {
+            "key": "rev",
+            "label": "Junctions reversed",
+            "unit": "V",
+            "hint": "OL"
+          }
+        },
+        {
+          "text": "**Collector to emitter, both ways.** Note the lowest.",
+          "reading": {
+            "key": "ce",
+            "label": "C to E",
+            "unit": "V",
+            "hint": "OL"
+          }
+        }
+      ],
+      "expect": {
+        "text": "0.5 to 0.8 V on both junctions forward, OL reversed, OL collector to emitter.",
+        "basis": "rule_of_thumb",
+        "source": "Kuphaldt, Meter check of a transistor"
+      },
+      "limits": "In circuit this is a screen: a base resistor or a load in parallel can lower the readings.",
+      "answers": [
+        {
+          "id": "ce-short",
+          "label": "Collector to emitter conducts: shorted",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ce",
+              "max": 0.3
+            }
+          ]
+        },
+        {
+          "id": "junction-short",
+          "label": "A junction reads under 0.1 V: shorted",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "be",
+              "max": 0.1
+            }
+          ]
+        },
+        {
+          "id": "open",
+          "label": "Base to emitter OL: open",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "be",
+              "is": "OL"
+            }
+          ]
+        },
+        {
+          "id": "good",
+          "label": "Two junctions, the rest OL",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "be",
+              "min": 0.4,
+              "max": 0.9
+            },
+            {
+              "reading": "bc",
+              "min": 0.4,
+              "max": 0.9
+            },
+            {
+              "reading": "rev",
+              "is": "OL"
+            },
+            {
+              "reading": "ce",
+              "is": "OL"
+            }
+          ]
+        },
+        {
+          "id": "odd",
+          "label": "Something else",
+          "outcome": "inconclusive"
+        }
+      ]
+    },
+    "inductor": {
+      "title": "Inductor or ferrite: continuity",
+      "applies_to": ["inductor"],
+      "goal": "An inductor is a coil: it reads a low resistance end to end. It fails open.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power.** Meter on Ω; touch the probes together and note the leads.",
+          "reading": {
+            "key": "leads",
+            "label": "Probes touching",
+            "unit": "Ω",
+            "optional": true
+          }
+        },
+        {
+          "text": "**One probe on each end.**",
+          "reading": {
+            "key": "ohms",
+            "label": "End to end",
+            "unit": "Ω",
+            "hint": "e.g. 0.3"
+          }
+        }
+      ],
+      "expect": {
+        "text": "Power inductors and ferrite beads: under 1 Ω. Through-hole chokes: 1 to 50 Ω.",
+        "basis": "rule_of_thumb"
+      },
+      "limits": "A shorted turn or a cracked core still reads fine: it needs an LCR meter.",
+      "answers": [
+        {
+          "id": "open",
+          "label": "OL: open",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "is": "OL"
+            }
+          ]
+        },
+        {
+          "id": "good",
+          "label": "A low resistance",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 100
+            }
+          ]
+        },
+        {
+          "id": "odd",
+          "label": "Higher than expected",
+          "outcome": "inconclusive"
+        }
+      ]
+    },
+    "switch": {
+      "title": "Switch or button: contacts",
+      "applies_to": ["switch"],
+      "goal": "A switch must read near 0 Ω when closed and open when released, steadily.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power.** Meter on Ω, one probe on each contact."
+        },
+        {
+          "text": "**Released (or OFF):** note the reading. On the board it may read the circuit around it instead of OL.",
+          "reading": {
+            "key": "open",
+            "label": "Released",
+            "unit": "Ω",
+            "hint": "OL"
+          }
+        },
+        {
+          "text": "**Pressed (or ON):** hold it and note the reading. Press several times: it should be steady.",
+          "reading": {
+            "key": "closed",
+            "label": "Pressed",
+            "unit": "Ω",
+            "hint": "e.g. 0.2"
+          }
+        }
+      ],
+      "answers": [
+        {
+          "id": "stuck",
+          "label": "Near 0 Ω even when released: stuck closed",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "open",
+              "max": 2
+            }
+          ]
+        },
+        {
+          "id": "no-contact",
+          "label": "Pressed reads over 10 Ω: worn or dirty contacts",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "closed",
+              "min": 10
+            }
+          ]
+        },
+        {
+          "id": "good",
+          "label": "Near 0 Ω pressed, high released",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "closed",
+              "max": 2
+            }
+          ]
+        }
+      ]
+    },
+    "ic-pins": {
+      "title": "Integrated circuit: supply and output pins",
+      "applies_to": ["ic"],
+      "goal": "A meter cannot prove a chip works, but a shorted supply or output stage shows up. Compare pins of the same kind with each other.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power.** Find pin 1 (a dot or dimple; pins count anticlockwise seen from above) and the datasheet's supply, ground and output pins."
+        },
+        {
+          "text": "**Look at it:** a crack or bulge in the package, a burn mark, bridged or lifted pins."
+        },
+        {
+          "text": "**Supply to ground:** meter on Ω, black on a ground pin, red on the supply pin. Wait for the reading to settle.",
+          "reading": {
+            "key": "supply",
+            "label": "Supply pin to ground",
+            "unit": "Ω",
+            "hint": "e.g. 2.3k, or 0.4"
+          }
+        },
+        {
+          "text": "**Each output pin to ground and to the supply pin, both probe directions.** Note the lowest reading.",
+          "reading": {
+            "key": "outputs",
+            "label": "Lowest output reading",
+            "unit": "Ω",
+            "hint": "e.g. 600, or 0.5",
+            "optional": true
+          }
+        }
+      ],
+      "limits": "No short found does not mean the chip works.",
+      "answers": [
+        {
+          "id": "supply-short",
+          "label": "Supply to ground under 2 Ω",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "supply",
+              "max": 2
+            }
+          ]
+        },
+        {
+          "id": "output-short",
+          "label": "An output under 2 Ω",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "outputs",
+              "max": 2
+            }
+          ]
+        },
+        {
+          "id": "no-short",
+          "label": "No short found",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "supply",
+              "min": 2
+            }
+          ]
+        }
+      ]
+    },
+    "wire": {
+      "title": "Wire or pad: continuity",
+      "applies_to": ["pad"],
+      "goal": "Check a wire and its joint end to end, and that it does not touch its neighbours.",
+      "instruments": ["multimeter"],
+      "power": "off",
+      "steps": [
+        {
+          "text": "**Unplug the power.** Look at the joint: dull, cracked or balled solder, broken strands at the pad."
+        },
+        {
+          "text": "**Meter on Ω, one probe on the pad, the other on the wire's far end.** Wiggle the wire while watching.",
+          "reading": {
+            "key": "ohms",
+            "label": "Pad to far end",
+            "unit": "Ω",
+            "hint": "e.g. 0.2"
+          }
+        },
+        {
+          "text": "**This pad to the next pad or wire.**",
+          "reading": {
+            "key": "short",
+            "label": "To the neighbour",
+            "unit": "Ω",
+            "hint": "OL",
+            "optional": true
+          }
+        }
+      ],
+      "answers": [
+        {
+          "id": "broken",
+          "label": "Over 2 Ω, or it flickers: broken",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 2
+            }
+          ]
+        },
+        {
+          "id": "touching",
+          "label": "Connected to the neighbour",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "short",
+              "max": 2
+            }
+          ]
+        },
+        {
+          "id": "good",
+          "label": "Under 2 Ω and steady",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "phases": [
+    {
+      "id": "safety",
+      "title": "Safety and set-up",
+      "goal": "The board is unpowered and the meter is known to read correctly."
+    },
+    {
+      "id": "inspect",
+      "title": "Close inspection",
+      "goal": "Look at U4 and the parts around it under the magnifier, for damage the photos could not show."
+    },
+    {
+      "id": "power-off",
+      "title": "Measurements with power off",
+      "goal": "Look for a short on U4's side of the board without any risk."
+    },
+    {
+      "id": "power-on",
+      "title": "One test with power on",
+      "goal": "Tell the button side from the motor output side, then read U4's supplies at idle."
+    },
+    {
+      "id": "buttons",
+      "title": "Buttons and supplies, power off",
+      "goal": "Check each button's contacts and the 3.3 V and 5 V supplies for a short, without any risk."
+    },
+    {
+      "id": "press",
+      "title": "What a press does, power on",
+      "goal": "Read the 3.3 V at idle, tell board flex from an electrical cause, then read the 3.3 V once while Timer is held."
+    },
+    {
+      "id": "supply",
+      "title": "The 3.3 V supply chain",
+      "goal": "Confirm U2's ground leg, read the supply from the adapter to U2's input at idle, and find the part that draws current."
+    },
+    {
+      "id": "load",
+      "title": "Failing regulator or overload",
+      "goal": "Tell a failing U2 from a load on its output: which part is warm, where D13 is connected, and the 3.3 V without D13."
+    },
+    {
+      "id": "repair",
+      "title": "Replace U2",
+      "goal": "Swap the 3.3 V regulator for a new one and check it gives 3.3 V."
+    },
+    {
+      "id": "verify",
+      "title": "Verify the repair",
+      "goal": "The original failing test, buttons then motor, several times."
+    },
+    {
+      "id": "next",
+      "title": "Next round",
+      "goal": "Hand the results back to the agent for the next part of the plan."
+    }
+  ],
+  "start": "safety",
+  "steps": {
+    "safety": {
+      "phase": "safety",
+      "kind": "check",
+      "title": "Unplug the unit and set up the meter",
+      "setup": ["The adapter is unplugged", "The motor's `M+` wire is still disconnected", "The meter is set to Ω (resistance)"],
+      "instruction": "**Wait one minute** after unplugging, for the capacitors to discharge. Then **touch the two probes together**: the meter should read under 0.5 Ω. If it reads more, press the probes harder or check the leads are fully plugged in.",
+      "why": "Every step until the Timer test is done with the power off, and the readings that follow depend on a meter that reads correctly.",
+      "risk": "none",
+      "minutes": 2,
+      "answers": [
+        {
+          "id": "ready",
+          "label": "Unplugged, and the probes read under 0.5 Ω together",
+          "outcome": "pass",
+          "next": "u4-inspect"
+        },
+        {
+          "id": "meter",
+          "label": "The probes read more than 0.5 Ω together",
+          "outcome": "fail",
+          "next": "replan-meter"
+        }
+      ]
+    },
+    "u4-inspect": {
+      "phase": "inspect",
+      "kind": "check",
+      "title": "Under the magnifier, is anything wrong around U4?",
+      "target": {
+        "ref": "U4"
+      },
+      "protocol": "visual",
+      "setup": ["The adapter is unplugged", "Good light on the board"],
+      "instruction": "Look through the **magnifier** at **U4** (8 pins) and the parts beside it: **D10**, **D11**, **C7**, **C9**, **C6** and **R13**, and the **M+** and **M-** pads. Check each of U4's 8 pins: **solder joining two pins**, a pin not sitting in its solder, a crack around a joint, a crack or burn mark on the chip's body. Then the small parts: cracks, chips or dark marks on C9, C6 and the diodes, and the top of C7 (flat, not domed or leaking). Note anything odd and where it is.",
+      "expect": {
+        "text": "Clean, shiny joints, no bridges, no cracks or marks.",
+        "basis": "rule_of_thumb"
+      },
+      "why": "The earlier photos (O7, O10) show no damage, but not a hairline bridge between two of U4's pins or a cracked ceramic capacitor, either of which could short the motor supply only when U4 switches on. Finding nothing proves nothing: the measurements that follow still apply.",
+      "risk": "none",
+      "minutes": 8,
+      "answers": [
+        {
+          "id": "damage",
+          "label": "I see damage (say where in the notes)",
+          "outcome": "fail",
+          "means": "A visible defect near U4. The next round decides what to do about it before any measurement or power.",
+          "next": "replan-damage"
+        },
+        {
+          "id": "clean",
+          "label": "Nothing visible",
+          "outcome": "pass",
+          "means": "No visible damage. On to the measurements with the power off.",
+          "next": "u4-supply-to-ground"
+        },
+        {
+          "id": "unsure",
+          "label": "Something looks odd, not sure (say where in the notes)",
+          "outcome": "inconclusive",
+          "means": "Noted for the next round. The measurements with the power off are safe, so carry on.",
+          "next": "u4-supply-to-ground"
+        }
+      ]
+    },
+    "u4-supply-to-ground": {
+      "phase": "power-off",
+      "kind": "measure",
+      "title": "Is U4's motor supply shorted to ground?",
+      "target": {
+        "net": "U4_VDD"
+      },
+      "protocol": "rail-to-ground",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "U4",
+          "pin": "4"
+        },
+        {
+          "lead": "black",
+          "ref": "U4",
+          "pin": "6"
+        }
+      ],
+      "setup": ["The adapter is unplugged", "Meter on Ω"],
+      "instruction": "Find **pin 1 of U4** (the dot or dimple on the chip). Pins 1 to 4 run along one side, 5 to 8 back along the other, so pin 4 and pin 5 face each other at the far end. **Red probe on pin 4** (VDD), **black probe on pin 6** (GND). Hold them still for five seconds and note the reading once it stops moving.",
+      "expect": {
+        "text": "Climbs past 1 kΩ, or to OL, as the capacitors on the supply charge.",
+        "basis": "rule_of_thumb",
+        "source": "docs/research/board-repair-diagnosis.md, unpowered rail readings"
+      },
+      "why": "If U4's motor supply is shorted to ground, by U4, C7, C9 or anything else on it, this shows it with no power. A clean reading clears C7 and C9 of a short (if they are on this supply, as the model assumes). It does not clear U4: a single shorted output transistor only conducts when U4 is driven.",
+      "risk": "none",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "short",
+          "label": "Under 1 Ω and steady: a hard short",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 1
+            }
+          ],
+          "means": "Something on U4's motor supply is shorted to ground.",
+          "effects": {
+            "suspects": {
+              "S1": "more_likely",
+              "S3": "more_likely"
+            }
+          },
+          "next": "replan-supply-short"
+        },
+        {
+          "id": "low",
+          "label": "1 to 10 Ω and steady",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 10
+            }
+          ],
+          "means": "Much lower than a healthy supply: a partial short.",
+          "effects": {
+            "suspects": {
+              "S1": "more_likely",
+              "S3": "more_likely"
+            }
+          },
+          "next": "replan-supply-short"
+        },
+        {
+          "id": "between",
+          "label": "10 Ω to 1 kΩ and steady",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 1000
+            }
+          ],
+          "means": "Lower than expected but not a short. Worth comparing later; the next checks still apply.",
+          "next": "u4-outputs"
+        },
+        {
+          "id": "ok",
+          "label": "Over 1 kΩ, or climbing to OL",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 1000
+            }
+          ],
+          "means": "U4's motor supply is not shorted to ground with the power off.",
+          "effects": {
+            "parts": [
+              {
+                "refs": ["C7", "C9"],
+                "status": "cleared",
+                "of": "short",
+                "note": "If they are on U4's supply, as the model assumes."
+              }
+            ],
+            "suspects": {
+              "S3": "less_likely"
+            }
+          },
+          "next": "u4-outputs"
+        }
+      ]
+    },
+    "u4-outputs": {
+      "phase": "power-off",
+      "kind": "measure",
+      "title": "Is one of U4's outputs shorted?",
+      "target": {
+        "ref": "U4"
+      },
+      "probes": [
+        {
+          "lead": "any",
+          "ref": "U4",
+          "pin": "8"
+        },
+        {
+          "lead": "any",
+          "ref": "U4",
+          "pin": "5"
+        },
+        {
+          "lead": "any",
+          "ref": "U4",
+          "pin": "6"
+        },
+        {
+          "lead": "any",
+          "ref": "U4",
+          "pin": "4"
+        }
+      ],
+      "setup": ["The adapter is unplugged", "Meter on Ω"],
+      "readings": [
+        {
+          "key": "outa_gnd",
+          "label": "Pin 8 (OUTA) to pin 6 (GND)",
+          "unit": "Ω",
+          "hint": "e.g. 850, OL"
+        },
+        {
+          "key": "outb_gnd",
+          "label": "Pin 5 (OUTB) to pin 6 (GND)",
+          "unit": "Ω",
+          "hint": "e.g. 850, OL"
+        },
+        {
+          "key": "outa_vdd",
+          "label": "Pin 8 (OUTA) to pin 4 (VDD)",
+          "unit": "Ω",
+          "hint": "e.g. 1.2k, OL"
+        },
+        {
+          "key": "outb_vdd",
+          "label": "Pin 5 (OUTB) to pin 4 (VDD)",
+          "unit": "Ω",
+          "hint": "e.g. 1.2k, OL"
+        }
+      ],
+      "instruction": "Measure each pair of pins below **twice, swapping the probes**, and enter the **lower** of the two readings. One direction may read a few hundred ohms (the chip's internal diodes): that is normal.",
+      "expect": {
+        "text": "Hundreds of ohms or more in at least one direction for every pair. Under 2 Ω both ways is a shorted transistor. No MX08L-specific values were found: compare OUTA with OUTB, they should read alike.",
+        "basis": "same_board"
+      },
+      "why": "An H-bridge has a high-side and a low-side transistor per output. With the motor disconnected, a near-zero reading from an output to GND or VDD is a shorted transistor (or a shorted part on that output, such as D10 or D11), and is exactly what would short the supply when U4 switches on.",
+      "risk": "none",
+      "minutes": 5,
+      "answers": [
+        {
+          "id": "outa-low",
+          "label": "OUTA to GND under 2 Ω",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "outa_gnd",
+              "max": 2
+            }
+          ],
+          "means": "Output A is shorted to ground.",
+          "effects": {
+            "suspects": {
+              "S1": "more_likely",
+              "S2": "more_likely"
+            }
+          },
+          "next": "d10-d11"
+        },
+        {
+          "id": "outb-low",
+          "label": "OUTB to GND under 2 Ω",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "outb_gnd",
+              "max": 2
+            }
+          ],
+          "means": "Output B is shorted to ground.",
+          "effects": {
+            "suspects": {
+              "S1": "more_likely",
+              "S2": "more_likely"
+            }
+          },
+          "next": "d10-d11"
+        },
+        {
+          "id": "outa-high",
+          "label": "OUTA to VDD under 2 Ω",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "outa_vdd",
+              "max": 2
+            }
+          ],
+          "means": "Output A is shorted to the supply.",
+          "effects": {
+            "suspects": {
+              "S1": "more_likely",
+              "S2": "more_likely"
+            }
+          },
+          "next": "d10-d11"
+        },
+        {
+          "id": "outb-high",
+          "label": "OUTB to VDD under 2 Ω",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "outb_vdd",
+              "max": 2
+            }
+          ],
+          "means": "Output B is shorted to the supply.",
+          "effects": {
+            "suspects": {
+              "S1": "more_likely",
+              "S2": "more_likely"
+            }
+          },
+          "next": "d10-d11"
+        },
+        {
+          "id": "none",
+          "label": "Every pair over 2 Ω",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "outa_gnd",
+              "min": 2
+            },
+            {
+              "reading": "outb_gnd",
+              "min": 2
+            },
+            {
+              "reading": "outa_vdd",
+              "min": 2
+            },
+            {
+              "reading": "outb_vdd",
+              "min": 2
+            }
+          ],
+          "means": "No output is shorted with the power off. U4 can still fail only when driven (too much on-resistance, or a short that needs voltage), which a meter cannot show.",
+          "effects": {
+            "suspects": {
+              "S1": "less_likely"
+            }
+          },
+          "next": "diode-sweep"
+        },
+        {
+          "id": "unclear",
+          "label": "Something else (OUTA and OUTB very different, unsteady readings)",
+          "outcome": "inconclusive",
+          "means": "Note what you saw: OUTA and OUTB reading differently is itself a clue.",
+          "next": "diode-sweep"
+        }
+      ]
+    },
+    "d10-d11": {
+      "phase": "power-off",
+      "kind": "sweep",
+      "title": "Test D10 and D11, beside U4",
+      "protocol": "diode",
+      "setup": ["The adapter is unplugged", "Meter on diode mode"],
+      "items": [
+        {
+          "id": "D10",
+          "target": {
+            "ref": "D10"
+          }
+        },
+        {
+          "id": "D11",
+          "target": {
+            "ref": "D11"
+          }
+        }
+      ],
+      "why": "An output reads shorted. If D10 or D11 reads shorted too, it may be the diode rather than U4; if both are fine, U4 is the prime suspect.",
+      "risk": "none",
+      "minutes": 4,
+      "answers": [
+        {
+          "id": "fail",
+          "label": "At least one reads shorted",
+          "when": [
+            {
+              "items": "any_fail"
+            }
+          ],
+          "effects": {
+            "suspects": {
+              "S2": "more_likely"
+            }
+          },
+          "next": "replan-output-short"
+        },
+        {
+          "id": "pass",
+          "label": "Both read as good diodes",
+          "when": [
+            {
+              "items": "all_pass"
+            }
+          ],
+          "effects": {
+            "suspects": {
+              "S2": "ruled_out",
+              "S1": "more_likely"
+            }
+          },
+          "next": "replan-output-short"
+        },
+        {
+          "id": "partial",
+          "label": "Some could not be judged",
+          "next": "replan-output-short"
+        }
+      ]
+    },
+    "diode-sweep": {
+      "phase": "power-off",
+      "kind": "sweep",
+      "title": "Test every diode near U4 and on the supply side",
+      "protocol": "diode",
+      "setup": ["The adapter is unplugged", "Meter on diode mode"],
+      "items": [
+        {
+          "id": "D10",
+          "target": {
+            "ref": "D10"
+          }
+        },
+        {
+          "id": "D11",
+          "target": {
+            "ref": "D11"
+          }
+        },
+        {
+          "id": "D12",
+          "target": {
+            "ref": "D12"
+          }
+        },
+        {
+          "id": "D13",
+          "target": {
+            "ref": "D13"
+          }
+        },
+        {
+          "id": "D15",
+          "target": {
+            "ref": "D15"
+          }
+        },
+        {
+          "id": "D16",
+          "target": {
+            "ref": "D16"
+          },
+          "expect": {
+            "text": "0.15 to 0.45 V forward (D16 is an SK34 Schottky), OL reverse.",
+            "basis": "marking",
+            "source": "D16 marked SK34"
+          },
+          "answers": [
+            {
+              "id": "shorted",
+              "label": "Under 0.1 V both ways: shorted",
+              "outcome": "fail",
+              "when": [
+                {
+                  "reading": "fwd",
+                  "max": 0.1
+                },
+                {
+                  "reading": "rev",
+                  "max": 0.1
+                }
+              ]
+            },
+            {
+              "id": "good",
+              "label": "0.15 to 0.45 V one way, OL the other",
+              "outcome": "pass",
+              "when": [
+                {
+                  "reading": "fwd",
+                  "min": 0.1,
+                  "max": 0.5
+                },
+                {
+                  "reading": "rev",
+                  "is": "OL"
+                }
+              ]
+            },
+            {
+              "id": "leaky",
+              "label": "Something else",
+              "outcome": "inconclusive"
+            }
+          ]
+        }
+      ],
+      "why": "A shorted diode is a common cause of a dragged-down supply, and these six take a few minutes. D10 and D11 sit beside U4; D12, D13 and D15 are unidentified glass diodes; D16 is the LED driver's Schottky.",
+      "risk": "none",
+      "minutes": 10,
+      "answers": [
+        {
+          "id": "fail",
+          "label": "At least one failed",
+          "when": [
+            {
+              "items": "any_fail"
+            }
+          ],
+          "next": "replan-diode"
+        },
+        {
+          "id": "pass",
+          "label": "All read as good diodes",
+          "when": [
+            {
+              "items": "all_pass"
+            }
+          ],
+          "effects": {
+            "suspects": {
+              "S2": "ruled_out"
+            }
+          },
+          "next": "vdd-to-c7"
+        },
+        {
+          "id": "partial",
+          "label": "Some could not be judged",
+          "next": "vdd-to-c7"
+        }
+      ]
+    },
+    "vdd-to-c7": {
+      "phase": "power-off",
+      "kind": "measure",
+      "title": "Is C7 really on U4's motor supply?",
+      "target": {
+        "pins": [
+          ["U4", "4"],
+          ["C7", "1"]
+        ]
+      },
+      "protocol": "continuity",
+      "probes": [
+        {
+          "lead": "any",
+          "ref": "U4",
+          "pin": "4"
+        },
+        {
+          "lead": "any",
+          "ref": "C7",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The adapter is unplugged", "Meter on Ω"],
+      "instruction": "One probe on **U4 pin 4**, the other on **C7's `+` lead** (the side without the stripe).",
+      "expect": {
+        "text": "Under 2 Ω if C7 is on U4's supply, as the model assumes.",
+        "basis": "physics"
+      },
+      "why": "C7 is a suspect (S3) only because the model assumes it is on U4's supply. This makes that connection measured, or removes it.",
+      "risk": "none",
+      "minutes": 2,
+      "answers": [
+        {
+          "id": "connected",
+          "label": "Under 2 Ω: connected",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 2
+            }
+          ],
+          "means": "C7 is on U4's motor supply.",
+          "next": "vdd-to-dc"
+        },
+        {
+          "id": "through-a-part",
+          "label": "2 Ω to 100 kΩ",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 100000
+            }
+          ],
+          "means": "Connected through something, not directly.",
+          "next": "vdd-to-dc"
+        },
+        {
+          "id": "open",
+          "label": "Over 100 kΩ or OL: not connected",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 100000
+            }
+          ],
+          "means": "C7 is not on U4's supply: the model is wrong there.",
+          "effects": {
+            "suspects": {
+              "S3": "less_likely"
+            }
+          },
+          "next": "vdd-to-dc"
+        }
+      ]
+    },
+    "vdd-to-dc": {
+      "phase": "power-off",
+      "kind": "measure",
+      "title": "Does U4's motor supply come straight from the 5 V input?",
+      "target": {
+        "pins": [
+          ["U4", "4"],
+          ["J_DCP", "1"]
+        ]
+      },
+      "protocol": "continuity",
+      "question": "OQ1",
+      "probes": [
+        {
+          "lead": "any",
+          "ref": "U4",
+          "pin": "4"
+        },
+        {
+          "lead": "any",
+          "ref": "J_DCP",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The adapter is unplugged", "Meter on Ω"],
+      "instruction": "One probe on **U4 pin 4**, the other on the **red 5 V input wire's pad** (`DC+`).",
+      "expect": {
+        "text": "Under 2 Ω if U4 is fed straight from the input; higher through the power switch or a part.",
+        "basis": "none"
+      },
+      "why": "Settles where U4's supply comes from (OQ1): straight from the input, after the power switch, or a separate rail. The next round needs it to know what a short in U4 pulls down.",
+      "risk": "none",
+      "minutes": 2,
+      "answers": [
+        {
+          "id": "connected",
+          "label": "Under 2 Ω: connected",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 2
+            }
+          ],
+          "means": "U4 is fed straight from the 5 V input.",
+          "next": "timer-test"
+        },
+        {
+          "id": "through-a-part",
+          "label": "2 Ω to 100 kΩ",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 100000
+            }
+          ],
+          "means": "Through a part (perhaps R1B, 100 Ω, or the switch).",
+          "next": "timer-test"
+        },
+        {
+          "id": "open",
+          "label": "Over 100 kΩ or OL",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 100000
+            }
+          ],
+          "means": "Not directly connected: probably after the power switch (try again with the switch ON).",
+          "next": "timer-test"
+        }
+      ]
+    },
+    "timer-test": {
+      "phase": "power-on",
+      "kind": "check",
+      "title": "Timer test: does pressing Timer reset the unit too?",
+      "power": "on",
+      "setup": ["The motor's `M+` wire is still disconnected", "Nothing metal is touching the board"],
+      "warning": "This powers the board and presses Move once. Do it once only: each press pushes current through whatever has failed.",
+      "instruction": "**Plug the adapter in** and switch the unit on: the lamp lights. **Press Timer** and wait five seconds: does its LED stay on, or does the unit reset (the lamp blinks, every LED goes off)? Then **press Move once** and watch again. **Unplug** when done.",
+      "why": "Timer does not use the motor. If Timer works and Move still resets, the fault is on the motor output side (U4 and around it). If Timer also resets, the button press itself is the trigger (board flex or the button circuit).",
+      "risk": "low",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "output-side",
+          "label": "Timer works normally; Move still resets",
+          "outcome": "fail",
+          "means": "The fault is on the motor output side.",
+          "effects": {
+            "suspects": {
+              "S5": "ruled_out",
+              "S1": "more_likely"
+            }
+          },
+          "next": "u4-vcc-idle"
+        },
+        {
+          "id": "button-side",
+          "label": "Timer resets the unit too",
+          "outcome": "fail",
+          "means": "The button press is the trigger, not the motor output.",
+          "effects": {
+            "suspects": {
+              "S5": "more_likely",
+              "S1": "less_likely"
+            }
+          },
+          "next": "buttons-sweep"
+        },
+        {
+          "id": "no-reset",
+          "label": "Nothing resets this time, Move works",
+          "outcome": "pass",
+          "means": "The fault did not show: it may be intermittent.",
+          "next": "replan-intermittent"
+        }
+      ]
+    },
+    "u4-vcc-idle": {
+      "phase": "power-on",
+      "kind": "measure",
+      "title": "What voltage is U4's logic supply (pin 1) at idle?",
+      "target": {
+        "ref": "U4"
+      },
+      "protocol": "rail-voltage",
+      "question": "OQ2",
+      "power": "on",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "U4",
+          "pin": "1"
+        },
+        {
+          "lead": "black",
+          "ref": "U4",
+          "pin": "6"
+        }
+      ],
+      "setup": ["The motor's `M+` wire is still disconnected", "Meter on DC volts, black probe held on U4 pin 6 (GND)"],
+      "warning": "Don't press any button during this step. Hold the red probe steady: slipping onto the next pin can short two pins.",
+      "instruction": "**Plug in and switch on**, leave it idle. **Red probe on U4 pin 1.** Note the voltage, then **unplug**.",
+      "expect": {
+        "text": "About 3.3 V or about 5 V: which one is the question.",
+        "basis": "none"
+      },
+      "why": "Settles OQ2: if U4's logic supply is the microcontroller's 3.3 V rail, a fault in U4 pulls the microcontroller's own supply down directly.",
+      "risk": "low",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "about-3v3",
+          "label": "3.0 to 3.6 V: the 3.3 V rail",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 3,
+              "max": 3.6
+            }
+          ],
+          "next": "u4-vdd-idle"
+        },
+        {
+          "id": "about-5v",
+          "label": "4.3 to 5.4 V: the 5 V rail",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 4.3,
+              "max": 5.4
+            }
+          ],
+          "next": "u4-vdd-idle"
+        },
+        {
+          "id": "zero",
+          "label": "Under 0.1 V",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "volts",
+              "max": 0.1
+            }
+          ],
+          "next": "u4-vdd-idle"
+        },
+        {
+          "id": "other",
+          "label": "Something else",
+          "outcome": "inconclusive",
+          "next": "u4-vdd-idle"
+        }
+      ]
+    },
+    "u4-vdd-idle": {
+      "phase": "power-on",
+      "kind": "measure",
+      "title": "What voltage is U4's motor supply (pin 4) at idle?",
+      "target": {
+        "ref": "U4"
+      },
+      "protocol": "rail-voltage",
+      "question": "OQ1",
+      "power": "on",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "U4",
+          "pin": "4"
+        },
+        {
+          "lead": "black",
+          "ref": "U4",
+          "pin": "6"
+        }
+      ],
+      "setup": ["The motor's `M+` wire is still disconnected", "Meter on DC volts, black probe held on U4 pin 6 (GND)"],
+      "warning": "Don't press any button during this step. Hold the red probe steady: slipping onto the next pin can short two pins.",
+      "instruction": "**Plug in and switch on**, leave it idle. **Red probe on U4 pin 4.** Note the voltage, then **unplug**.",
+      "expect": {
+        "text": "Close to the adapter's 5 V.",
+        "basis": "physics"
+      },
+      "why": "The idle motor supply, a reference for the next round (which plans the measurement during a press, or removing U4).",
+      "risk": "low",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "about-5v",
+          "label": "4.3 to 5.4 V",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 4.3,
+              "max": 5.4
+            }
+          ],
+          "next": "replan-output-side"
+        },
+        {
+          "id": "zero",
+          "label": "Under 0.1 V",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "volts",
+              "max": 0.1
+            }
+          ],
+          "next": "replan-output-side"
+        },
+        {
+          "id": "other",
+          "label": "Something else",
+          "outcome": "inconclusive",
+          "next": "replan-output-side"
+        }
+      ]
+    },
+    "replan-meter": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: the meter needs checking",
+      "instruction": "The probes read more than 0.5 Ω touching each other. Next round: plan a meter check, or adjust every low threshold by the lead resistance."
+    },
+    "replan-damage": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: damage seen near U4",
+      "instruction": "The magnifier shows a defect near U4 (see the notes). Next round: what that part or joint does, and whether to clean, reflow (with hot air) or lift it before any power."
+    },
+    "replan-supply-short": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: U4's supply is shorted",
+      "instruction": "U4's motor supply reads shorted to ground with the power off. Next round: find which part it is (U4, C7, C9, or what else is on that supply), lifting one at a time with hot air, cheapest first."
+    },
+    "replan-output-short": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: an output of U4 is shorted",
+      "instruction": "One of U4's outputs reads shorted with the power off, and D10 and D11 have been tested. Next round: decide between removing U4 with hot air and lifting D10 or D11 first."
+    },
+    "replan-diode": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: a diode failed",
+      "instruction": "A diode read shorted or open. Next round: what that diode does, and whether it explains the reset."
+    },
+    "replan-intermittent": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: the fault did not show",
+      "instruction": "Nothing reset during the Timer test. Next round: an intermittent fault plan (connections, joints, flexing, then cold from the freeze spray and gentle heat from the hot air on one small area at a time)."
+    },
+    "replan-output-side": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: the fault is on U4's side",
+      "instruction": "Timer works, Move resets, and nothing reads shorted with the power off. Next round: U4 is the prime suspect. Plan removing it with hot air and pressing Move once without it (no reset would condemn U4), with these idle voltages as the reference."
+    },
+    "buttons-sweep": {
+      "phase": "buttons",
+      "kind": "sweep",
+      "title": "Do the three buttons open and close cleanly?",
+      "protocol": "switch",
+      "setup": ["The adapter is unplugged", "Meter on Ω"],
+      "instruction": "For each button, **one probe on each of its two pads** (the app shows them on the top photo). Note the reading **released**, then **held pressed**. Press it a few times: the pressed reading should be steady. In the notes, say which button it is on the case (Timer, Move or Shooting Star) if you can tell.",
+      "items": [
+        {
+          "id": "SW1",
+          "target": {
+            "ref": "SW1"
+          },
+          "probes": [
+            {
+              "lead": "any",
+              "ref": "SW1",
+              "pin": "1"
+            },
+            {
+              "lead": "any",
+              "ref": "SW1",
+              "pin": "2"
+            }
+          ]
+        },
+        {
+          "id": "SW2",
+          "target": {
+            "ref": "SW2"
+          },
+          "probes": [
+            {
+              "lead": "any",
+              "ref": "SW2",
+              "pin": "1"
+            },
+            {
+              "lead": "any",
+              "ref": "SW2",
+              "pin": "2"
+            }
+          ]
+        },
+        {
+          "id": "SW3",
+          "target": {
+            "ref": "SW3"
+          },
+          "probes": [
+            {
+              "lead": "any",
+              "ref": "SW3",
+              "pin": "1"
+            },
+            {
+              "lead": "any",
+              "ref": "SW3",
+              "pin": "2"
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "text": "Pressed: under 2 Ω. Released: high, or OL (on the board it may read the circuit around it, kilohms or more).",
+        "basis": "rule_of_thumb"
+      },
+      "why": "Every button now resets the unit (F7). A button stuck closed or leaking when released, or one that reads oddly pressed, points at the button circuit (S5). Clean readings leave board flex and the supply.",
+      "risk": "none",
+      "minutes": 8,
+      "answers": [
+        {
+          "id": "fail",
+          "label": "At least one button failed",
+          "when": [
+            {
+              "items": "any_fail"
+            }
+          ],
+          "next": "replan-button-fault"
+        },
+        {
+          "id": "pass",
+          "label": "All three open and close cleanly",
+          "when": [
+            {
+              "items": "all_pass"
+            }
+          ],
+          "next": "rail-3v3-to-ground"
+        },
+        {
+          "id": "partial",
+          "label": "Some could not be judged",
+          "next": "rail-3v3-to-ground"
+        }
+      ]
+    },
+    "rail-3v3-to-ground": {
+      "phase": "buttons",
+      "kind": "measure",
+      "title": "Is the 3.3 V supply shorted to ground?",
+      "target": {
+        "net": "+3V3"
+      },
+      "protocol": "rail-to-ground",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "U2",
+          "pin": "3"
+        },
+        {
+          "lead": "black",
+          "ref": "U2",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The adapter is unplugged", "Meter on Ω"],
+      "instruction": "Turn the board over. **U2** is the small black regulator with three legs on one side and a wide tab on the other, beside D13 (the app highlights its legs). **Red probe on U2 pin 3** (the 3.3 V output), **black probe on U2 pin 1** (ground). Hold them still for five seconds and note the reading once it stops moving.",
+      "expect": {
+        "text": "Climbs past 1 kΩ, or to OL, as the capacitors charge. A microcontroller on this supply may hold it at a few kilohms.",
+        "basis": "rule_of_thumb",
+        "source": "docs/research/board-repair-diagnosis.md, unpowered rail readings"
+      },
+      "why": "The microcontroller most likely runs on this supply (S9). A partial short here, from C1, D13 or the microcontroller, would weaken it. A clean reading clears C1 of a short (if it is on this supply, as the model assumes).",
+      "risk": "none",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "short",
+          "label": "Under 10 Ω and steady",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 10
+            }
+          ],
+          "means": "The 3.3 V supply is shorted or nearly so.",
+          "effects": {
+            "suspects": {
+              "S9": "more_likely",
+              "S10": "more_likely"
+            }
+          },
+          "next": "replan-3v3-short"
+        },
+        {
+          "id": "between",
+          "label": "10 Ω to 1 kΩ and steady",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 1000
+            }
+          ],
+          "means": "Lower than expected. Noted for the next round; the next checks still apply.",
+          "next": "rail-5v-to-ground"
+        },
+        {
+          "id": "ok",
+          "label": "Over 1 kΩ, or climbing to OL",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 1000
+            }
+          ],
+          "means": "The 3.3 V supply is not shorted with the power off.",
+          "effects": {
+            "parts": [
+              {
+                "refs": ["C1"],
+                "status": "cleared",
+                "of": "short",
+                "note": "If it is on the 3.3 V supply, as the model assumes."
+              }
+            ]
+          },
+          "next": "rail-5v-to-ground"
+        }
+      ]
+    },
+    "rail-5v-to-ground": {
+      "phase": "buttons",
+      "kind": "measure",
+      "title": "Is the 5 V supply after the power switch shorted to ground?",
+      "target": {
+        "net": "+5V"
+      },
+      "protocol": "rail-to-ground",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "U2",
+          "pin": "2"
+        },
+        {
+          "lead": "black",
+          "ref": "U2",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The adapter is unplugged", "The power switch is ON", "Meter on Ω"],
+      "instruction": "**Slide the power switch to ON** (the adapter stays unplugged). **Red probe on U2 pin 2** (the regulator's input, the middle leg), **black probe on U2 pin 1**. Note the reading once it stops moving.",
+      "expect": {
+        "text": "Climbs past 1 kΩ, or to OL, as the capacitors charge.",
+        "basis": "rule_of_thumb",
+        "source": "docs/research/board-repair-diagnosis.md, unpowered rail readings"
+      },
+      "why": "The main 5 V supply feeds the regulator, the LED driver and probably U4. A partial short on it would sag on any load. A clean reading clears C8 (and C3, if it is on this supply) of a short.",
+      "risk": "none",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "short",
+          "label": "Under 10 Ω and steady",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 10
+            }
+          ],
+          "means": "The 5 V supply is shorted or nearly so.",
+          "next": "replan-5v-short"
+        },
+        {
+          "id": "between",
+          "label": "10 Ω to 1 kΩ and steady",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 1000
+            }
+          ],
+          "means": "Lower than expected. Noted; the next checks still apply.",
+          "next": "vdd-to-dc-on"
+        },
+        {
+          "id": "ok",
+          "label": "Over 1 kΩ, or climbing to OL",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 1000
+            }
+          ],
+          "means": "The 5 V supply is not shorted with the power off.",
+          "effects": {
+            "parts": [
+              {
+                "refs": ["C8"],
+                "status": "cleared",
+                "of": "short",
+                "note": "If it is on the 5 V supply, as the model assumes."
+              }
+            ]
+          },
+          "next": "vdd-to-dc-on"
+        }
+      ]
+    },
+    "vdd-to-dc-on": {
+      "phase": "buttons",
+      "kind": "measure",
+      "title": "With the switch ON, is U4's motor supply connected to the 5 V input?",
+      "target": {
+        "pins": [
+          ["U4", "4"],
+          ["J_DCP", "1"]
+        ]
+      },
+      "protocol": "continuity",
+      "question": "OQ1",
+      "probes": [
+        {
+          "lead": "any",
+          "ref": "U4",
+          "pin": "4"
+        },
+        {
+          "lead": "any",
+          "ref": "J_DCP",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The adapter is unplugged", "The power switch is ON", "Meter on Ω"],
+      "instruction": "Same as before, with the **power switch ON** this time: one probe on **U4 pin 4**, the other on the **DC+ pad** (red input wire).",
+      "expect": {
+        "text": "Under 2 Ω if U4 is fed from the input through the switch.",
+        "basis": "none"
+      },
+      "why": "The first reading (8.6 MΩ, R17) left it open whether the switch was OFF. This settles where U4's supply comes from (OQ1) and which pin of the switch carries it (OQ4).",
+      "risk": "none",
+      "minutes": 2,
+      "answers": [
+        {
+          "id": "connected",
+          "label": "Under 2 Ω: connected",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 2
+            }
+          ],
+          "means": "U4 is fed from the 5 V input through the power switch.",
+          "next": "idle-3v3"
+        },
+        {
+          "id": "through-a-part",
+          "label": "2 Ω to 100 kΩ",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 100000
+            }
+          ],
+          "means": "Through a part, not directly.",
+          "next": "idle-3v3"
+        },
+        {
+          "id": "open",
+          "label": "Over 100 kΩ or OL",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 100000
+            }
+          ],
+          "means": "Not connected even with the switch ON: U4 has its own supply path.",
+          "next": "idle-3v3"
+        }
+      ]
+    },
+    "idle-3v3": {
+      "phase": "press",
+      "kind": "measure",
+      "title": "What is the 3.3 V supply at idle?",
+      "target": {
+        "net": "+3V3"
+      },
+      "protocol": "rail-voltage",
+      "power": "on",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "U2",
+          "pin": "3"
+        },
+        {
+          "lead": "black",
+          "ref": "U2",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The motor's `M+` wire is still disconnected", "Nothing metal is touching the board", "Meter on DC volts"],
+      "warning": "Hold the probes steady on U2's legs: slipping across two legs can short the regulator's output.",
+      "instruction": "**Plug the adapter in** and switch on: the lamp lights. Don't press any button. **Red probe on U2 pin 3**, **black on U2 pin 1**. Note the voltage. Leave it plugged in for the next step if it reads 3.1 to 3.5 V; otherwise **unplug**.",
+      "expect": {
+        "text": "3.135 to 3.465 V (3.3 V within 5 %).",
+        "basis": "datasheet",
+        "source": "U2 marked 6206A …33: a 3.3 V regulator"
+      },
+      "why": "The reference for the next two steps. A low idle reading would already show a weak regulator or a load on the 3.3 V supply (S9, S10).",
+      "risk": "low",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "in-range",
+          "label": "3.1 to 3.5 V",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 3.1,
+              "max": 3.5
+            }
+          ],
+          "means": "The 3.3 V supply is right at idle.",
+          "next": "flex-test"
+        },
+        {
+          "id": "low",
+          "label": "0.1 to 3.1 V",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 0.1,
+              "max": 3.1
+            }
+          ],
+          "means": "The 3.3 V supply is low even at idle.",
+          "effects": {
+            "suspects": {
+              "S9": "more_likely"
+            }
+          },
+          "next": "u2-ground-check"
+        },
+        {
+          "id": "zero",
+          "label": "Under 0.1 V",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "volts",
+              "max": 0.1
+            }
+          ],
+          "means": "No 3.3 V here while the unit works: the probes may be on the wrong legs, or the microcontroller runs on another supply.",
+          "next": "u2-ground-check"
+        },
+        {
+          "id": "high",
+          "label": "Over 3.5 V",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 3.5
+            }
+          ],
+          "means": "Higher than a 3.3 V regulator gives: the legs or the part may be other than the model says.",
+          "next": "u2-ground-check"
+        }
+      ]
+    },
+    "flex-test": {
+      "phase": "press",
+      "kind": "check",
+      "title": "Does flexing the board, without pressing a button, reset the unit?",
+      "power": "on",
+      "setup": ["The unit is on and idle, the lamp lit", "The motor's `M+` wire is still disconnected", "A plastic or wooden stick (a chopstick, a pen cap), nothing metal"],
+      "warning": "Use only a plastic or wooden stick and press gently: the board is powered.",
+      "instruction": "With the stick, **press gently on the board right beside the Timer button**, not on the button itself, as hard as a finger press would be. Then do the same **beside the other two buttons**, and **near U2 and D13** on the bottom side if you can reach it. Watch the lamp: does the unit reset (the lamp blinks, the LEDs go off)? **Unplug** if it resets; otherwise stay plugged in for the next step.",
+      "why": "Tells a cracked joint opened by board flex (S5, mechanical) from an electrical cause (the button circuit or the supply). It presses no button, so it does not trigger the fault the usual way.",
+      "risk": "medium",
+      "minutes": 4,
+      "answers": [
+        {
+          "id": "resets",
+          "label": "The unit resets when I press near a button or near U2",
+          "outcome": "fail",
+          "means": "Flexing the board alone resets the unit: a cracked joint or a cracked part (S5). Say in the notes where it reset.",
+          "effects": {
+            "suspects": {
+              "S5": "more_likely"
+            }
+          },
+          "next": "replan-flex"
+        },
+        {
+          "id": "no-reset",
+          "label": "Nothing resets",
+          "outcome": "pass",
+          "means": "Board flex does not reset it: the cause is electrical.",
+          "next": "timer-hold-3v3"
+        }
+      ]
+    },
+    "timer-hold-3v3": {
+      "phase": "press",
+      "kind": "measure",
+      "title": "Does the 3.3 V supply drop while Timer is held?",
+      "target": {
+        "net": "+3V3"
+      },
+      "power": "on",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "U2",
+          "pin": "3"
+        },
+        {
+          "lead": "black",
+          "ref": "U2",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The unit is on and idle, the lamp lit", "Meter on DC volts, probes held on U2 pin 3 (red) and pin 1 (black)", "A second person presses Timer, or the meter's probes are clipped on"],
+      "warning": "This presses Timer once. Do it once only: each press resets the unit.",
+      "readings": [
+        {
+          "key": "lowest",
+          "label": "Lowest reading while Timer was held",
+          "unit": "V",
+          "hint": "e.g. 3.28"
+        }
+      ],
+      "instruction": "With the probes held steady on U2, **press Timer and hold it for three seconds**, watching the meter. Note the **lowest** reading you saw, and in the notes whether the unit reset. **Unplug** when done.",
+      "expect": {
+        "text": "Stays at the idle reading on a good board. A multimeter averages: a dip shorter than a fraction of a second may not show at all.",
+        "basis": "rule_of_thumb"
+      },
+      "why": "If the 3.3 V supply visibly drops while Timer is held, the press loads or shorts that supply (S9, S10, or the button wired into it). If it does not move, the dip is too short for a meter, or the reset comes another way (the reset line).",
+      "risk": "low",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "drops",
+          "label": "Dropped below 3.0 V",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "lowest",
+              "max": 3
+            }
+          ],
+          "means": "The 3.3 V supply drops on a Timer press: the next round follows what loads it.",
+          "effects": {
+            "suspects": {
+              "S9": "more_likely",
+              "S10": "more_likely"
+            }
+          },
+          "next": "replan-3v3-dip"
+        },
+        {
+          "id": "steady",
+          "label": "Stayed at 3.0 V or above",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "lowest",
+              "min": 3
+            }
+          ],
+          "means": "No dip a meter can see. It may still be too short to show, or the reset comes another way.",
+          "next": "replan-dip-unseen"
+        }
+      ]
+    },
+    "replan-button-fault": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: a button is faulty",
+      "instruction": "A button reads stuck, leaking or noisy. Next round: what that button is wired to, and cleaning or replacing it (with hot air), then the press test again."
+    },
+    "replan-3v3-short": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: the 3.3 V supply is shorted",
+      "instruction": "The 3.3 V supply reads under 10 Ω to ground with the power off. Next round: find which part pulls it down (D13, C1 or the microcontroller), lifting one at a time with hot air, D13 first."
+    },
+    "replan-5v-short": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: the 5 V supply is shorted",
+      "instruction": "The 5 V supply reads under 10 Ω to ground with the power off. Next round: split it and find the part, lifting one at a time with hot air."
+    },
+    "replan-flex": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: board flex resets the unit",
+      "instruction": "Pressing the board beside a button, without pressing it, resets the unit. Next round: find the cracked joint under the magnifier where it reset, and reflow it."
+    },
+    "replan-3v3-dip": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: the 3.3 V supply drops on a press",
+      "instruction": "The 3.3 V supply drops while Timer is held. Next round: lift D13 and test it out of circuit, then what the Timer button connects to, and the regulator's capacitors."
+    },
+    "replan-dip-unseen": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: no dip a meter can see",
+      "instruction": "The 3.3 V supply holds while Timer is held, as far as a meter can see. Next round: lift D13 to test it out of circuit, and trace the buttons to the microcontroller to find its reset pin."
+    },
+    "u2-ground-check": {
+      "phase": "supply",
+      "kind": "measure",
+      "title": "Is U2 pin 1 really ground?",
+      "target": {
+        "pins": [
+          ["U2", "1"],
+          ["J_DCN", "1"]
+        ]
+      },
+      "protocol": "continuity",
+      "probes": [
+        {
+          "lead": "any",
+          "ref": "U2",
+          "pin": "1"
+        },
+        {
+          "lead": "any",
+          "ref": "J_DCN",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The adapter is unplugged", "Meter on Ω"],
+      "instruction": "**Black probe on the DC- pad** (the black input wire). **Red probe on the U2 leg you used as pin 1** (ground) for the 2.07 V reading. Note the reading. If it is not near 0 Ω, try the **other outer leg** and say in the notes which one reads near 0.",
+      "expect": {
+        "text": "Under 2 Ω: U2 pin 1 is ground, as the 6206 datasheet says.",
+        "basis": "datasheet",
+        "source": "6206 in SOT-89: pin 1 GND, pin 2 (and the tab) VIN, pin 3 VOUT"
+      },
+      "why": "The 2.07 V reading (R25) is only right if the black probe was on ground. Cheap clone regulators do not all share one pin order.",
+      "risk": "none",
+      "minutes": 2,
+      "answers": [
+        {
+          "id": "connected",
+          "label": "Under 2 Ω: pin 1 is ground",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 2
+            }
+          ],
+          "means": "U2 pin 1 is ground: the 2.07 V reading stands.",
+          "next": "dc-in-idle"
+        },
+        {
+          "id": "not-ground",
+          "label": "Over 2 Ω",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 2
+            }
+          ],
+          "means": "The leg used as ground is not ground: the 2.07 V reading may be wrong, and the model's pin order for U2 too.",
+          "next": "replan-u2-pins"
+        }
+      ]
+    },
+    "dc-in-idle": {
+      "phase": "supply",
+      "kind": "measure",
+      "title": "What voltage reaches the board from the adapter?",
+      "target": {
+        "net": "DC+"
+      },
+      "protocol": "rail-voltage",
+      "power": "on",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "J_DCP",
+          "pin": "1"
+        },
+        {
+          "lead": "black",
+          "ref": "J_DCN",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The motor's `M+` wire is still disconnected", "Nothing metal is touching the board", "Meter on DC volts"],
+      "instruction": "**Plug the adapter in** and switch on; don't press any button. **Red probe on the DC+ pad**, **black on the DC- pad**. Note the voltage. Stay plugged in for the next step.",
+      "expect": {
+        "text": "4.75 to 5.25 V (down to about 4.4 V at the end of a long USB cable).",
+        "basis": "physics"
+      },
+      "why": "The start of the supply chain: adapter, then U2's input, then U2's output (2.07 V). A low reading here puts the fault before the board.",
+      "risk": "low",
+      "minutes": 2,
+      "answers": [
+        {
+          "id": "in-range",
+          "label": "4.4 to 5.4 V",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 4.4,
+              "max": 5.4
+            }
+          ],
+          "means": "The adapter delivers 5 V to the board.",
+          "next": "u2-vin-idle"
+        },
+        {
+          "id": "low",
+          "label": "Under 4.4 V",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "volts",
+              "max": 4.4
+            }
+          ],
+          "means": "The input is low: the cable, the adapter, or a heavy load on the board.",
+          "next": "u2-vin-idle"
+        },
+        {
+          "id": "high",
+          "label": "Over 5.4 V",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 5.4
+            }
+          ],
+          "means": "Higher than a 5 V adapter should give.",
+          "next": "u2-vin-idle"
+        }
+      ]
+    },
+    "u2-vin-idle": {
+      "phase": "supply",
+      "kind": "measure",
+      "title": "What voltage reaches U2's input?",
+      "target": {
+        "ref": "U2"
+      },
+      "protocol": "rail-voltage",
+      "power": "on",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "U2",
+          "pin": "2"
+        },
+        {
+          "lead": "black",
+          "ref": "U2",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The unit is on and idle", "Meter on DC volts"],
+      "warning": "Hold the probes steady: slipping across two legs can short the regulator.",
+      "instruction": "**Red probe on U2's tab** (the wide metal tab, the same as the middle leg, pin 2), **black on U2 pin 1** (ground). Note the voltage. Then, while still on, measure **U2 pin 3** (the output) once more and note it in the notes. Stay plugged in for the next step.",
+      "expect": {
+        "text": "Close to the DC+ reading, above 4.3 V.",
+        "basis": "physics"
+      },
+      "why": "Separates a starved regulator (S11: the input is low) from a weak regulator or an overloaded output (S9, S12: the input is fine, the output is low).",
+      "risk": "low",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "ok",
+          "label": "4.3 V or more",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 4.3
+            }
+          ],
+          "means": "U2's input is fine: the fault is U2 itself or what its output feeds.",
+          "effects": {
+            "suspects": {
+              "S11": "ruled_out",
+              "S9": "more_likely",
+              "S12": "more_likely"
+            }
+          },
+          "next": "touch-idle"
+        },
+        {
+          "id": "low",
+          "label": "3.5 to 4.3 V",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 3.5,
+              "max": 4.3
+            }
+          ],
+          "means": "Lower than the input, but enough for a 3.3 V regulator: U2 or its load is still the main suspect.",
+          "next": "touch-idle"
+        },
+        {
+          "id": "starved",
+          "label": "Under 3.5 V",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "volts",
+              "max": 3.5
+            }
+          ],
+          "means": "U2 does not get enough to make 3.3 V: the feed to U2 is the fault.",
+          "effects": {
+            "suspects": {
+              "S11": "more_likely"
+            }
+          },
+          "next": "touch-idle"
+        }
+      ]
+    },
+    "replan-u2-pins": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: U2's pin order is not as assumed",
+      "instruction": "The leg used as ground for the 2.07 V reading is not ground. Next round: correct U2's pins in the model and read the 3.3 V supply again."
+    },
+    "touch-idle": {
+      "phase": "load",
+      "kind": "check",
+      "title": "At idle, is U2, D13 or U1 warm to the touch?",
+      "power": "on",
+      "target": {
+        "ref": "U2"
+      },
+      "setup": ["The unit is on and idle for at least two minutes, the lamp lit", "The motor's `M+` wire is still disconnected", "Dry fingers, no rings or watch near the board"],
+      "warning": "Tap each part quickly with a fingertip first: a regulator in trouble can be too hot to hold. The board runs on 5 V, so touching it is electrically safe.",
+      "instruction": "Leave the unit on and idle for **two minutes**. Then **tap U2** (bottom side, the regulator with the tab), then **D13** beside it, then **U1** (the large chip on the top side), then **C1**, with a fingertip. If a tap is fine, hold your finger on the part for a few seconds. Compare with a part far away (a resistor at the other end of the board). Note which feels warmer than the rest, and how warm. **Unplug** when done.",
+      "expect": {
+        "text": "Every part at room temperature, or barely warm.",
+        "basis": "rule_of_thumb"
+      },
+      "why": "Replaces the freeze-spray test (R29, R30). An overloaded U2 turns 2.8 V times the current into heat and runs hot; a failing U2 with no overload stays cool. A warm D13 or U1 is the load itself (S10, S12).",
+      "risk": "low",
+      "minutes": 5,
+      "answers": [
+        {
+          "id": "u2-hot",
+          "label": "U2 is hot (hard to keep a finger on)",
+          "outcome": "fail",
+          "means": "U2 is working hard: something on its output draws too much, or U2 is shorting inside.",
+          "effects": {
+            "suspects": {
+              "S12": "more_likely"
+            }
+          },
+          "next": "d13-ends-idle"
+        },
+        {
+          "id": "u2-warm",
+          "label": "U2 is clearly warm, not hot",
+          "outcome": "fail",
+          "means": "U2 carries some extra current.",
+          "effects": {
+            "suspects": {
+              "S12": "more_likely"
+            }
+          },
+          "next": "d13-ends-idle"
+        },
+        {
+          "id": "other-warm",
+          "label": "D13, U1 or another part is the warm one (say which in the notes)",
+          "outcome": "fail",
+          "means": "That part is drawing current at idle.",
+          "effects": {
+            "suspects": {
+              "S12": "more_likely"
+            }
+          },
+          "next": "d13-ends-idle"
+        },
+        {
+          "id": "all-cool",
+          "label": "Nothing feels warmer than the rest",
+          "outcome": "pass",
+          "means": "No overload you can feel: U2 itself is the most likely fault.",
+          "effects": {
+            "suspects": {
+              "S9": "more_likely"
+            }
+          },
+          "next": "d13-ends-idle"
+        }
+      ]
+    },
+    "d13-ends-idle": {
+      "phase": "load",
+      "kind": "measure",
+      "title": "Powered, what voltage is at each end of D13?",
+      "target": {
+        "ref": "D13"
+      },
+      "power": "on",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "D13",
+          "pin": "1"
+        },
+        {
+          "lead": "red",
+          "ref": "D13",
+          "pin": "2"
+        },
+        {
+          "lead": "black",
+          "ref": "U2",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The motor's `M+` wire is still disconnected", "Meter on DC volts, black probe on U2 pin 1 (ground)"],
+      "warning": "Hold the red probe on one end of D13 at a time, steadily: slipping onto U2's legs can short them.",
+      "readings": [
+        {
+          "key": "band",
+          "label": "D13's band end (cathode) to ground",
+          "unit": "V",
+          "hint": "e.g. 2.07"
+        },
+        {
+          "key": "plain",
+          "label": "D13's other end (anode) to ground",
+          "unit": "V",
+          "hint": "e.g. 0"
+        }
+      ],
+      "instruction": "**Plug in and switch on**, don't press any button. Black probe on **U2 pin 1**. **Red probe on D13's end with the band**, note the voltage; then on **D13's other end**, note it. **Unplug** when done.",
+      "expect": {
+        "text": "Tells what D13 is connected to: 0 V is ground, about 2 V the 3.3 V supply, about 4.9 V the 5 V supply.",
+        "basis": "physics"
+      },
+      "why": "D13 reads low both ways (F11) and sits against U2. If it sits across the 3.3 V supply and ground, a leaky D13 is a load on U2 (S10), and removing it is a fair test. Elsewhere, it cannot pull the 3.3 V down.",
+      "risk": "low",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "across-3v3",
+          "label": "Band end near 2 V, other end near 0 V: across the 3.3 V supply",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "band",
+              "min": 1.5,
+              "max": 3.6
+            },
+            {
+              "reading": "plain",
+              "max": 0.2
+            }
+          ],
+          "means": "D13 sits from the 3.3 V supply to ground: it can be the load. Next, remove it and read the 3.3 V again.",
+          "effects": {
+            "suspects": {
+              "S10": "more_likely"
+            }
+          },
+          "next": "remove-d13"
+        },
+        {
+          "id": "from-5v",
+          "label": "Band end near 4.9 V, other end near 2 V: from the 3.3 V supply up to the 5 V supply",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "band",
+              "min": 4.3
+            },
+            {
+              "reading": "plain",
+              "min": 1.5,
+              "max": 3.6
+            }
+          ],
+          "means": "D13 protects U2 (it lets the 3.3 V side discharge into the 5 V side). Leaking, it would raise the 3.3 V, not lower it.",
+          "effects": {
+            "suspects": {
+              "S10": "ruled_out"
+            }
+          },
+          "next": "get-u2"
+        },
+        {
+          "id": "elsewhere",
+          "label": "Anything else (say the two readings)",
+          "outcome": "inconclusive",
+          "means": "D13 is somewhere else: the next round works out what that means.",
+          "next": "replan-u2"
+        }
+      ]
+    },
+    "remove-d13": {
+      "phase": "load",
+      "kind": "action",
+      "title": "Remove D13 with hot air",
+      "target": {
+        "ref": "D13"
+      },
+      "setup": ["The adapter is unplugged", "The board is on a heat-proof surface, bottom side up", "Tweezers at hand", "Kapton or aluminium tape over U2, C1 and C8 if you have some"],
+      "warning": "Hot air can blow away or damage the parts next to D13: keep the nozzle on D13, low air flow. Let the board cool before touching it.",
+      "instruction": "Set the hot air to about **350 °C, low air flow**. Heat **D13** from 2 to 3 cm, moving in small circles over both ends. When the solder at both ends turns shiny and liquid, **lift D13 off with tweezers** and set it aside, keeping it. Let the board cool for a minute.",
+      "why": "Removing D13 tells whether it is the load on the 3.3 V supply (S10). It also lets D13 be tested on its own. It sits across the supply, so the board can be powered briefly without it for the test.",
+      "risk": "high",
+      "minutes": 10,
+      "answers": [
+        {
+          "id": "removed",
+          "label": "D13 is off the board, nothing else moved",
+          "outcome": "pass",
+          "means": "D13 removed.",
+          "next": "d13-off-board"
+        },
+        {
+          "id": "damage",
+          "label": "Removed, but something else moved or got damaged (say what)",
+          "outcome": "inconclusive",
+          "means": "Stop here: the next round checks the damage before any power.",
+          "next": "replan-u2"
+        }
+      ]
+    },
+    "d13-off-board": {
+      "phase": "load",
+      "kind": "measure",
+      "title": "Off the board, is D13 a good diode?",
+      "target": {
+        "ref": "D13"
+      },
+      "protocol": "diode",
+      "setup": ["D13 is off the board", "Meter on diode mode"],
+      "instruction": "Hold D13 on a non-metal surface. **Red probe on the plain end, black on the band end**: note the reading. **Swap the probes**: note it.",
+      "expect": {
+        "text": "0.5 to 0.8 V one way, OL the other, like its twin D12 on the board.",
+        "basis": "same_board",
+        "source": "D12: 0.573 V and OL (R12)"
+      },
+      "why": "On its own D13 shows what it really is. Low both ways means leaky or shorted (S10).",
+      "risk": "none",
+      "minutes": 2,
+      "answers": [
+        {
+          "id": "shorted",
+          "label": "Under 0.1 V both ways: shorted",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "fwd",
+              "max": 0.1
+            },
+            {
+              "reading": "rev",
+              "max": 0.1
+            }
+          ],
+          "means": "D13 is shorted.",
+          "effects": {
+            "suspects": {
+              "S10": "more_likely"
+            },
+            "parts": [
+              {
+                "refs": ["D13"],
+                "status": "faulty"
+              }
+            ]
+          },
+          "next": "v3v3-without-d13"
+        },
+        {
+          "id": "good",
+          "label": "0.4 to 0.8 V one way, OL the other",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "fwd",
+              "min": 0.4,
+              "max": 0.8
+            },
+            {
+              "reading": "rev",
+              "is": "OL"
+            }
+          ],
+          "means": "D13 is a good diode: the low readings on the board came from the parts around it.",
+          "effects": {
+            "parts": [
+              {
+                "refs": ["D13"],
+                "status": "ok"
+              }
+            ]
+          },
+          "next": "v3v3-without-d13"
+        },
+        {
+          "id": "leaky",
+          "label": "Something else (low both ways, unequal)",
+          "outcome": "fail",
+          "means": "D13 leaks.",
+          "effects": {
+            "suspects": {
+              "S10": "more_likely"
+            },
+            "parts": [
+              {
+                "refs": ["D13"],
+                "status": "faulty"
+              }
+            ]
+          },
+          "next": "v3v3-without-d13"
+        }
+      ]
+    },
+    "v3v3-without-d13": {
+      "phase": "load",
+      "kind": "measure",
+      "title": "Without D13, what is the 3.3 V supply at idle?",
+      "target": {
+        "net": "+3V3"
+      },
+      "protocol": "rail-voltage",
+      "power": "on",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "U2",
+          "pin": "3"
+        },
+        {
+          "lead": "black",
+          "ref": "U2",
+          "pin": "1"
+        }
+      ],
+      "setup": ["D13 is off the board", "The motor's `M+` wire is still disconnected", "Meter on DC volts"],
+      "instruction": "**Plug in and switch on**, don't press any button. **Red probe on U2 pin 3**, **black on U2 pin 1**. Note the voltage, then **unplug**.",
+      "expect": {
+        "text": "3.135 to 3.465 V if D13 was the load.",
+        "basis": "datasheet",
+        "source": "U2 marked 6206A …33"
+      },
+      "why": "If the 3.3 V comes back without D13, D13 was the fault (S10); if it stays low, U2 or another load is (S9, S12).",
+      "risk": "low",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "back",
+          "label": "3.1 to 3.5 V: back to normal",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 3.1,
+              "max": 3.5
+            }
+          ],
+          "means": "D13 was pulling the 3.3 V supply down.",
+          "effects": {
+            "suspects": {
+              "S10": "confirmed",
+              "S9": "less_likely"
+            }
+          },
+          "next": "replan-d13"
+        },
+        {
+          "id": "still-low",
+          "label": "Still under 3.1 V",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "volts",
+              "max": 3.1
+            }
+          ],
+          "means": "D13 was not the cause: U2 or another load is.",
+          "effects": {
+            "suspects": {
+              "S10": "ruled_out",
+              "S9": "more_likely"
+            }
+          },
+          "next": "replan-u2"
+        },
+        {
+          "id": "high",
+          "label": "Over 3.5 V",
+          "outcome": "inconclusive",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 3.5
+            }
+          ],
+          "means": "Higher than a 3.3 V regulator gives: stop and report.",
+          "next": "replan-u2"
+        }
+      ]
+    },
+    "replan-d13": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: D13 was pulling the 3.3 V down",
+      "instruction": "Without D13 the 3.3 V supply is back. Next round: what D13 is for, a replacement part, and the original test (Move, Timer, Shooting Star) a few times."
+    },
+    "replan-u2": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: U2 or another load",
+      "instruction": "D13 is not the cause, or could not be tested. Next round: replace U2 (a 6206 3.3 V regulator in SOT-89) or find the load, from the touch test and these readings."
+    },
+    "get-u2": {
+      "phase": "repair",
+      "kind": "action",
+      "title": "Get a replacement 3.3 V regulator",
+      "target": {
+        "ref": "U2"
+      },
+      "instruction": "Order a **3.3 V regulator in a SOT-89 package with the same pin order**: pin 1 ground, pin 2 (and the tab) input, pin 3 output. Two common ones that fit: **XC6206P332PR** or **HT7333-A** (SOT-89). Check the seller's pin drawing before buying. Get two or three: they cost a few cents. Also have **flux** at hand if you can: it makes the solder flow.",
+      "why": "U2 is most likely failed (S9). A part with another pin order would put 5 V on the 3.3 V side and could damage the microcontroller.",
+      "risk": "none",
+      "minutes": 10,
+      "answers": [
+        {
+          "id": "have-it",
+          "label": "I have the new regulator, and its pin order matches",
+          "outcome": "pass",
+          "means": "Ready to replace U2.",
+          "next": "remove-u2"
+        }
+      ]
+    },
+    "remove-u2": {
+      "phase": "repair",
+      "kind": "action",
+      "title": "Remove U2 with hot air",
+      "target": {
+        "ref": "U2"
+      },
+      "setup": ["The adapter is unplugged", "The board on a heat-proof surface, bottom side up", "Tweezers at hand", "Kapton or aluminium tape over D13, C1 and C8 if you have some", "A photo of U2's orientation before removing it"],
+      "warning": "Hot air can blow away the small parts beside U2 (C1, C8, D13): keep the nozzle over U2, low air flow. Let the board cool before touching it.",
+      "instruction": "**Take a photo** of U2 first, so the new one goes on the same way (three legs toward D13, the tab away from it). Add a little **flux** on the legs and the tab if you have some. Set the hot air to about **380 °C, low air flow**, and heat U2 from 2 to 3 cm in small circles, the tab longest (it holds the most heat). When all the solder is shiny and liquid, **lift U2 off with tweezers**. Keep it. Let the board cool.",
+      "why": "Removes the failed regulator (S9).",
+      "risk": "high",
+      "minutes": 15,
+      "answers": [
+        {
+          "id": "removed",
+          "label": "U2 is off, the pads look clean, nothing else moved",
+          "outcome": "pass",
+          "means": "U2 removed.",
+          "next": "fit-u2"
+        },
+        {
+          "id": "damage",
+          "label": "Removed, but a pad lifted or another part moved (say what)",
+          "outcome": "inconclusive",
+          "means": "Stop here: the next round sorts out the damage before going on.",
+          "next": "replan-repair"
+        }
+      ]
+    },
+    "fit-u2": {
+      "phase": "repair",
+      "kind": "action",
+      "title": "Solder the new regulator in U2's place",
+      "target": {
+        "ref": "U2"
+      },
+      "setup": ["The adapter is unplugged", "The board cool, U2's pads clean", "The new regulator, the same way round as the photo"],
+      "warning": "Check the orientation twice: pin 1 (ground) on the pad that was pin 1. Turned the wrong way, it puts the full 5 V where 3.3 V goes.",
+      "instruction": "A little **flux** on the pads. Place the new regulator **the same way as the old one** in your photo: three legs toward D13, the tab on the big pad. Hold it with tweezers and heat with the hot air (about **380 °C, low air flow**) until the solder flows and the part settles flat on its pads. Let it cool, then look at it under the magnifier: **each leg soldered, no solder joining two legs**.",
+      "why": "Fits the replacement (S9).",
+      "risk": "high",
+      "minutes": 15,
+      "answers": [
+        {
+          "id": "fitted",
+          "label": "Fitted, each leg soldered, no bridges",
+          "outcome": "pass",
+          "means": "New regulator fitted.",
+          "next": "check-new-u2"
+        },
+        {
+          "id": "trouble",
+          "label": "Something went wrong (say what)",
+          "outcome": "inconclusive",
+          "means": "Stop here: the next round sorts it out before any power.",
+          "next": "replan-repair"
+        }
+      ]
+    },
+    "check-new-u2": {
+      "phase": "repair",
+      "kind": "measure",
+      "title": "Before power, is the new regulator's output shorted?",
+      "target": {
+        "net": "+3V3"
+      },
+      "protocol": "rail-to-ground",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "U2",
+          "pin": "3"
+        },
+        {
+          "lead": "black",
+          "ref": "U2",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The adapter is unplugged", "Meter on Ω"],
+      "instruction": "**Red probe on the new regulator's pin 3**, **black on pin 1**. Note the reading once it stops moving.",
+      "expect": {
+        "text": "About 10 kΩ, as before the swap.",
+        "basis": "same_board",
+        "source": "R22: 10 kΩ with the old U2"
+      },
+      "why": "A solder bridge or a part turned the wrong way would show here, before it can do any harm.",
+      "risk": "none",
+      "minutes": 2,
+      "answers": [
+        {
+          "id": "short",
+          "label": "Under 100 Ω",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "ohms",
+              "max": 100
+            }
+          ],
+          "means": "Something is bridged: don't power it.",
+          "next": "replan-repair"
+        },
+        {
+          "id": "ok",
+          "label": "100 Ω or more",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "ohms",
+              "min": 100
+            }
+          ],
+          "means": "No short: safe to power.",
+          "next": "v3v3-new-u2"
+        }
+      ]
+    },
+    "v3v3-new-u2": {
+      "phase": "repair",
+      "kind": "measure",
+      "title": "With the new regulator, what is the 3.3 V supply at idle?",
+      "target": {
+        "net": "+3V3"
+      },
+      "protocol": "rail-voltage",
+      "power": "on",
+      "probes": [
+        {
+          "lead": "red",
+          "ref": "U2",
+          "pin": "3"
+        },
+        {
+          "lead": "black",
+          "ref": "U2",
+          "pin": "1"
+        }
+      ],
+      "setup": ["The motor's `M+` wire is still disconnected", "Meter on DC volts"],
+      "instruction": "**Plug in and switch on**, don't press any button. **Red probe on U2 pin 3**, **black on pin 1**. Note the voltage. If it reads over 3.6 V, **unplug at once**.",
+      "expect": {
+        "text": "3.135 to 3.465 V.",
+        "basis": "datasheet",
+        "source": "XC6206P332 / HT7333: 3.3 V output"
+      },
+      "why": "If the new regulator gives 3.3 V, the old one had failed (S9 confirmed). If it also sits near 2 V, something loads the supply after all (S12).",
+      "risk": "low",
+      "minutes": 3,
+      "answers": [
+        {
+          "id": "good",
+          "label": "3.1 to 3.5 V",
+          "outcome": "pass",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 3.1,
+              "max": 3.5
+            }
+          ],
+          "means": "The 3.3 V supply is back.",
+          "effects": {
+            "suspects": {
+              "S9": "confirmed"
+            },
+            "parts": [
+              {
+                "refs": ["U2"],
+                "status": "faulty",
+                "note": "The old U2: replaced, and the supply came back."
+              }
+            ]
+          },
+          "next": "buttons-retest"
+        },
+        {
+          "id": "still-low",
+          "label": "Under 3.1 V",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "volts",
+              "max": 3.1
+            }
+          ],
+          "means": "Still low with a new regulator: something loads the supply.",
+          "effects": {
+            "suspects": {
+              "S12": "more_likely",
+              "S9": "less_likely"
+            }
+          },
+          "next": "replan-load"
+        },
+        {
+          "id": "high",
+          "label": "Over 3.5 V",
+          "outcome": "fail",
+          "when": [
+            {
+              "reading": "volts",
+              "min": 3.5
+            }
+          ],
+          "means": "Too high: unplug, the part or its pin order is not right.",
+          "next": "replan-repair"
+        }
+      ]
+    },
+    "buttons-retest": {
+      "phase": "verify",
+      "kind": "check",
+      "title": "Do the buttons work without resetting, motor still disconnected?",
+      "power": "on",
+      "setup": ["The motor's `M+` wire is still disconnected", "The unit on, the lamp lit"],
+      "instruction": "Press **Timer**: its LED should come on and stay. Press **Shooting Star**, then **Move**. Each should switch its function on (the motor won't turn: it is disconnected). Do the round **three times**. Does the unit ever reset (the lamp blinks, every LED goes off)? **Unplug** when done.",
+      "why": "The original failing test, without the motor first: the buttons resetting was the fault.",
+      "risk": "low",
+      "minutes": 4,
+      "answers": [
+        {
+          "id": "works",
+          "label": "No reset, every button works, three times over",
+          "outcome": "pass",
+          "means": "The buttons no longer reset the unit.",
+          "next": "reconnect-motor"
+        },
+        {
+          "id": "still-resets",
+          "label": "It still resets on a button",
+          "outcome": "fail",
+          "means": "The regulator was not the whole story.",
+          "next": "replan-repair"
+        }
+      ]
+    },
+    "reconnect-motor": {
+      "phase": "verify",
+      "kind": "action",
+      "title": "Reconnect the motor's `M+` wire",
+      "target": {
+        "ref": "J_MP"
+      },
+      "setup": ["The adapter is unplugged"],
+      "instruction": "**Reconnect the motor's `M+` wire** the way it was before you disconnected it (resolder it to the `M+` pad if it was soldered). Check it does not touch any other pad.",
+      "why": "The full test needs the motor.",
+      "risk": "low",
+      "minutes": 10,
+      "answers": [
+        {
+          "id": "done",
+          "label": "Reconnected",
+          "outcome": "pass",
+          "means": "Motor reconnected.",
+          "next": "full-test"
+        }
+      ]
+    },
+    "full-test": {
+      "phase": "verify",
+      "kind": "check",
+      "title": "The original test: does everything work with the motor?",
+      "power": "on",
+      "setup": ["The motor reconnected", "The unit reassembled enough for the dome to turn, or the motor free to turn"],
+      "instruction": "**Plug in and switch on.** Press **Move**: the dome should turn. Leave it **one minute**, then stop it. Press **Shooting Star**: it should run. Press **Timer**. Repeat the whole round **five times**, then leave it running with rotation for **ten minutes**. Does it ever reset?",
+      "why": "A repair is only done when the original failing test passes several times over.",
+      "risk": "low",
+      "minutes": 20,
+      "answers": [
+        {
+          "id": "fixed",
+          "label": "Everything works, five rounds and ten minutes, no reset",
+          "outcome": "pass",
+          "means": "The repair holds.",
+          "next": "done"
+        },
+        {
+          "id": "motor-resets",
+          "label": "Buttons fine, but Move or Shooting Star resets with the motor",
+          "outcome": "fail",
+          "means": "The supply now holds, but the motor's start still pulls something down.",
+          "next": "replan-repair"
+        },
+        {
+          "id": "other",
+          "label": "Something else goes wrong (say what)",
+          "outcome": "fail",
+          "means": "The next round looks at it.",
+          "next": "replan-repair"
+        }
+      ]
+    },
+    "done": {
+      "phase": "verify",
+      "kind": "done",
+      "title": "Repaired",
+      "instruction": "The unit no longer resets: U2, the 3.3 V regulator, had failed and has been replaced. Keep the old U2 in a bag with a note, in case the fault comes back."
+    },
+    "replan-repair": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: the repair needs a look",
+      "instruction": "Something during or after the regulator swap needs attention (see the notes). Next round: sort it out before going on."
+    },
+    "replan-load": {
+      "phase": "next",
+      "kind": "replan",
+      "title": "Update the plan: something loads the 3.3 V supply",
+      "instruction": "A new regulator also gives about 2 V. Next round: find the load on the 3.3 V supply (the microcontroller, the front-panel LEDs or something not in the model)."
+    }
+  },
+  "history": [
+    {
+      "revision": 1,
+      "date": "2026-11-22",
+      "reason": "First plan in the version 2 format, from the version 1 repair log (`docs/repair-log-v1.md`) and observations O1 to O15. The scenario lists a multimeter only.",
+      "changes": "The log's next tests become steps: U4's supply and output checks with power off come before the Timer test (power off before power on), and a diode sweep and two connection checks are added. The log's suspects become S1 to S8; U4 and C7, one suspect before, are now two (S1, S3) so they can be told apart, and D10 and D11 are added (S2). Removing U4 is left to the next round, after these results."
+    },
+    {
+      "revision": 2,
+      "date": "2026-11-22",
+      "reason": "The user added a magnifier, hot air and freeze spray to the instruments (and renamed the board). R1: the safety step is done, the meter reads correctly.",
+      "changes": "Added a close inspection under the magnifier (`u4-inspect`, phase `inspect`) between the safety step and `u4-supply-to-ground`: `safety` answer `ready` now leads there, and a new `replan-damage` step ends its damage branch. The `visual` protocol is added, limited to the magnifier. Every other step is kept. The replan steps now name hot air for lifting or removing parts (U4, C7, C9, D10, D11) and freeze spray for an intermittent fault; removing U4 stays for the next round, after the cheaper power-off checks and the Timer test (cheap and safe before invasive). No powered freeze-spray test is added: the reset cuts U4's output within a split second, too short to warm a part enough to show. Suspects unchanged.",
+      "model_changes": ["Added C2, an electrolytic capacitor left of C3, as the user pointed out from a close-up: box on the top photo, value not read, no connections (not traced)."]
+    },
+    {
+      "revision": 3,
+      "date": "2026-11-22",
+      "reason": "The user asked for a procedure for every kind of part on the board: the test dialog had offered the diode test for resistor R3, because the plan held no resistor procedure. R2: nothing visible around U4 under the magnifier. R3: R3 inspected, nothing visible.",
+      "changes": "Added the library's procedures for each kind of part on this board, limited to the user's instruments (the multimeter): `resistor`, `capacitor`, `electrolytic` (look and short; ESR needs an ESR meter, not declared), `led`, `bjt`, `inductor`, `switch`, `ic-pins` and `wire`. No step uses them yet; they are for testing a part from the board, outside the plan. F5 now cites R2. The tree, its ids and the suspects are unchanged: R2 found nothing, which proves nothing about U4, and the next step is still `u4-supply-to-ground`.",
+      "model_changes": []
+    },
+    {
+      "revision": 4,
+      "date": "2026-11-22",
+      "reason": "The user walked the whole tree (R7 to R18) and reached `replan-button`: Timer resets the unit too. Nothing on U4's side reads shorted with the power off, and D13 reads low both ways, unlike its twin D12. The user also tested R3, R12, R17 and R13 from the board (R4, R5, R6, R8, all in tolerance).",
+      "changes": "Kept every walked step and its answers. `timer-test` answer `button-side` now leads to a new branch, and `replan-button` is retired. Added, in order: `buttons-sweep` (the three buttons' contacts), `rail-3v3-to-ground` and `rail-5v-to-ground` (power off), `vdd-to-dc-on` (U4's supply to DC+ with the switch ON, since R17 may have been taken with it OFF), `idle-3v3`, `flex-test` (press beside the buttons without pressing them) and `timer-hold-3v3` (one Timer press, reading the 3.3 V), each ending in a replan. Suspects: S5 (the button press) moves to first. New S9 (the 3.3 V supply sagging on a small load) and S10 (D13). S1, S3 and S4 move down: they cannot explain a reset on Timer. S2 is ruled out by R10 and R11. Findings F7 to F12 added, and the assessment filled in from R4 to R16.",
+      "model_changes": ["U4_VDD: C7 pin 1 promoted from assumed to measured, evidence R16 (0 Ω between U4 pin 4 and C7 +)."]
+    },
+    {
+      "revision": 5,
+      "date": "2026-11-22",
+      "reason": "The user reached `replan-3v3-idle`: the 3.3 V supply reads 2.07 V at idle (R25). Also: the three buttons are clean (R19 to R21, and the user named them), the 3.3 V supply is not shorted with the power off (R22), the 5 V supply reads 72 Ω whatever the switch (R23), and U4's supply is not connected to DC+ even with the switch ON (R24).",
+      "changes": "Kept every walked step. `idle-3v3` answers `low`, `zero` and `high` now lead to a new branch, and `replan-3v3-idle` is retired. Added `u2-ground-check` (U2 pin 1 to DC-, power off, since the 2.07 V depends on it), `dc-in-idle` and `u2-vin-idle` (the supply from the adapter to U2's input), `frost-idle` (freeze spray at idle on U2, D13, C1, C8 and U1, no button pressed), and the replans `replan-u2-pins` and `replan-supply`. Suspects: S9 (U2 weak) moves to first, with new S12 (a part on the 3.3 V supply drawing too much once powered) and S11 (U2's input too low). S5 (the button press) moves down: the buttons are clean, and the low supply explains every press resetting the unit. Findings F13 to F16 added.",
+      "model_changes": ["SW1, SW2 and SW3: value now names the button on the case (Timer, Move, Shooting Star) and a note cites R19, R20 and R21, as the user identified them during the button test."]
+    },
+    {
+      "revision": 6,
+      "date": "2026-11-22",
+      "reason": "U2 pin 1 is ground (R26), 5.04 V reaches the board (R27) and 4.86 V reaches U2's input (R28). The freeze-spray step could not be done: the user has no freeze spray (R29, R30).",
+      "changes": "Kept every walked step. `u2-vin-idle` answers now lead to `touch-idle`, which replaces the freeze-spray test with a fingertip; `frost-idle` and its results R29 and R30 are retired (they proved nothing). Added `d13-ends-idle` (where D13 is connected, powered), then, only if D13 sits across the 3.3 V supply: `remove-d13` (hot air), `d13-off-board` and `v3v3-without-d13`. The branches end in `replan-d13` or `replan-u2`; `replan-supply` is retired with `frost-idle`. Suspects: S11 (U2's input low) ruled out by R28. S9 and S12 stay first: the touch test separates them. F17 added.",
+      "model_changes": ["Instruments: freeze spray removed, as the user does not have it (R29, R30).", "GND: U2 pin 1 promoted from datasheet to measured, evidence R26 (0 Ω to the DC- pad)."]
+    },
+    {
+      "revision": 7,
+      "date": "2026-11-22",
+      "reason": "The user reached `replan-u2`: U2 stays cool at idle (R31), and D13 runs from U2's output up to its input (R32), so it is a protection diode, not a load.",
+      "changes": "Kept every walked step. `d13-ends-idle` answer `from-5v` now leads to `get-u2` instead of `replan-u2`. Added the repair and its check: `get-u2`, `remove-u2`, `fit-u2`, `check-new-u2`, `v3v3-new-u2`, then the original test, `buttons-retest`, `reconnect-motor` and `full-test`, ending in `done`, `replan-repair` or `replan-load`. Suspects: S9 (U2 failed) first; S12 (an overload) down, since U2 stays cool; S10 (D13) ruled out by R32. F18 and F19 added.",
+      "model_changes": ["+5V: D13 pin 1 (cathode) added, measured, evidence R32 (4.84 V powered, as U2's input).", "+3V3: D13 pin 2 (anode) added, measured, evidence R32 (2.09 V powered, as U2's output).", "D13: group set to regulator, with a note on its role."]
+    }
+  ]
+}

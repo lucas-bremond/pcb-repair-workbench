@@ -1,0 +1,786 @@
+{
+  "format": "pcb-record",
+  "version": 2,
+  "observations": [
+    {
+      "id": "O1",
+      "date": "2026-11-07",
+      "text": "**Press Move.** Lamp blinks for a split second, N/S LED flashes then goes out, motor doesn't turn. Conclusion: the unit resets."
+    },
+    {
+      "id": "O2",
+      "date": "2026-11-07",
+      "text": "**Press Shooting Star.** Same; SS LED flashes then goes out. Conclusion: same fault."
+    },
+    {
+      "id": "O3",
+      "date": "2026-11-07",
+      "text": "**Try 5 V/2 A and 5 V/4 A adapters.** No change. Conclusion: not the adapter."
+    },
+    {
+      "id": "O4",
+      "date": "2026-11-07",
+      "text": "**Open the unit, check the motor and belt.** Belt intact, motor shaft never moves. Conclusion: not the transmission."
+    },
+    {
+      "id": "O5",
+      "date": "2026-11-07",
+      "text": "**Review the manual.** Shooting stars only run while rotating; rotation reverses (N/S); 5 W at 5 V. Conclusion: brownout reset suspected; normal draw about 1 A."
+    },
+    {
+      "id": "O6",
+      "date": "2026-11-07",
+      "text": "**Press Shooting Star alone, rotation never switched on.** Same reset. Conclusion: not specific to the Move button."
+    },
+    {
+      "id": "O7",
+      "date": "2026-11-07",
+      "text": "**Photograph both sides of the board.** No visible damage; pads and main parts identified. Conclusion: board reference in the README."
+    },
+    {
+      "id": "O8",
+      "date": "2026-11-07",
+      "text": "**Inspect the shooting-star mechanism.** It depends on the motor turning. Conclusion: both buttons go through the motor path."
+    },
+    {
+      "id": "O9",
+      "date": "2026-11-07",
+      "text": "**Disconnect `M+`, press Shooting Star.** Still resets. Conclusion: motor ruled out; the fault is upstream of it."
+    },
+    {
+      "id": "O10",
+      "date": "2026-11-07",
+      "text": "**Photograph part close-ups (`photos/parts/`).** U4 is a Mixic MX08L motor driver, U2 a 3.3 V regulator, U1 unmarked; no visible damage. Conclusion: motor driver identified."
+    },
+    {
+      "id": "O11",
+      "date": "2026-11-07",
+      "text": "**Run re:trace (automated analysis) on the photos.** No parts, markings or real traces found (sees paper and pads, not masked traces). Conclusion: not usable here."
+    },
+    {
+      "id": "O12",
+      "date": "2026-11-07",
+      "text": "**Run a PCB-trained YOLO model on the photos.** Finds 41 of 44 parts; ICs and SMD passives right, U4 called a diode on the board view. Conclusion: nothing new."
+    },
+    {
+      "id": "O13",
+      "date": "2026-11-07",
+      "text": "**Build a partial board model from the photos.** 45 of 133 pins on a net, mostly assumed; netlist, KiCad schematic and HTML viewer. Conclusion: board model built (this scenario)."
+    },
+    {
+      "id": "O14",
+      "date": "2026-11-08",
+      "text": "**Trace audit of the model; wires and 3D traces.** C6 traced across M+/M-; 4 placement-only links downgraded; 6 nets wired. Conclusion: model audited; traces drawn."
+    },
+    {
+      "id": "O15",
+      "date": "2026-11-08",
+      "text": "**Draw every known connection; schematic editor.** All 45 known pins wired or on power symbols; wire style shows confidence. Conclusion: every known connection drawn."
+    }
+  ],
+  "instructions": [],
+  "results": [
+    {
+      "id": "R1",
+      "date": "2026-11-22",
+      "time": "11:06:02",
+      "plan_revision": 1,
+      "step": "safety",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "outcome": "pass",
+      "answer": "ready"
+    },
+    {
+      "id": "R2",
+      "date": "2026-11-22",
+      "time": "13:40:00",
+      "plan_revision": 2,
+      "step": "u4-inspect",
+      "target": {
+        "ref": "U4"
+      },
+      "protocol": "visual",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "outcome": "pass",
+      "answer": "clean"
+    },
+    {
+      "id": "R3",
+      "date": "2026-11-22",
+      "time": "13:47:20",
+      "target": {
+        "ref": "R3"
+      },
+      "protocol": "visual",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "answer": "clean",
+      "outcome": "pass"
+    },
+    {
+      "id": "R4",
+      "date": "2026-11-22",
+      "time": "13:52:37",
+      "target": {
+        "ref": "R3"
+      },
+      "protocol": "resistor",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "leads": "0",
+        "ohms": "68"
+      },
+      "answer": "in-tolerance",
+      "outcome": "pass"
+    },
+    {
+      "id": "R5",
+      "date": "2026-11-22",
+      "time": "13:53:19",
+      "target": {
+        "ref": "R12"
+      },
+      "protocol": "resistor",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "leads": "0",
+        "ohms": "1000"
+      },
+      "answer": "in-tolerance",
+      "outcome": "pass"
+    },
+    {
+      "id": "R6",
+      "date": "2026-11-22",
+      "time": "13:53:52",
+      "target": {
+        "ref": "R17"
+      },
+      "protocol": "resistor",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "leads": "0",
+        "ohms": "10000"
+      },
+      "answer": "in-tolerance",
+      "outcome": "pass"
+    },
+    {
+      "id": "R7",
+      "date": "2026-11-22",
+      "time": "13:56:58",
+      "plan_revision": 3,
+      "step": "u4-supply-to-ground",
+      "target": {
+        "net": "U4_VDD"
+      },
+      "protocol": "rail-to-ground",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "outcome": "pass",
+      "readings": {
+        "leads": "0",
+        "ohms": "OL"
+      },
+      "answer": "ok",
+      "effects": {
+        "parts": [
+          {
+            "refs": ["C7", "C9"],
+            "status": "cleared",
+            "of": "short",
+            "note": "If they are on U4's supply, as the model assumes."
+          }
+        ],
+        "suspects": {
+          "S3": "less_likely"
+        }
+      }
+    },
+    {
+      "id": "R8",
+      "date": "2026-11-22",
+      "time": "13:57:44",
+      "target": {
+        "ref": "R13"
+      },
+      "protocol": "resistor",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "leads": "0",
+        "ohms": "0"
+      },
+      "answer": "in-tolerance",
+      "outcome": "pass"
+    },
+    {
+      "id": "R9",
+      "date": "2026-11-22",
+      "time": "14:04:27",
+      "plan_revision": 3,
+      "step": "u4-outputs",
+      "target": {
+        "ref": "U4"
+      },
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "outcome": "pass",
+      "readings": {
+        "outa_gnd": "4.66M",
+        "outb_gnd": "4.5M",
+        "outa_vdd": "7.45M",
+        "outb_vdd": "7.46M"
+      },
+      "answer": "none",
+      "effects": {
+        "suspects": {
+          "S1": "less_likely"
+        }
+      }
+    },
+    {
+      "id": "R10",
+      "date": "2026-11-22",
+      "time": "14:06:24",
+      "plan_revision": 3,
+      "step": "diode-sweep",
+      "item": "D10",
+      "target": {
+        "ref": "D10"
+      },
+      "protocol": "diode",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "fwd": "0.557",
+        "rev": "OL"
+      },
+      "answer": "good",
+      "outcome": "pass"
+    },
+    {
+      "id": "R11",
+      "date": "2026-11-22",
+      "time": "14:06:54",
+      "plan_revision": 3,
+      "step": "diode-sweep",
+      "item": "D11",
+      "target": {
+        "ref": "D11"
+      },
+      "protocol": "diode",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "fwd": "0.57",
+        "rev": "OL"
+      },
+      "answer": "good",
+      "outcome": "pass"
+    },
+    {
+      "id": "R12",
+      "date": "2026-11-22",
+      "time": "14:09:00",
+      "plan_revision": 3,
+      "step": "diode-sweep",
+      "item": "D12",
+      "target": {
+        "ref": "D12"
+      },
+      "protocol": "diode",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "fwd": "0.573",
+        "rev": "OL"
+      },
+      "answer": "good",
+      "outcome": "pass"
+    },
+    {
+      "id": "R13",
+      "date": "2026-11-22",
+      "time": "14:10:47",
+      "plan_revision": 3,
+      "step": "diode-sweep",
+      "item": "D13",
+      "target": {
+        "ref": "D13"
+      },
+      "protocol": "diode",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "fwd": "0.356",
+        "rev": "0.457"
+      },
+      "answer": "leaky",
+      "outcome": "inconclusive"
+    },
+    {
+      "id": "R14",
+      "date": "2026-11-22",
+      "time": "14:12:22",
+      "plan_revision": 3,
+      "step": "diode-sweep",
+      "item": "D15",
+      "target": {
+        "ref": "D15"
+      },
+      "protocol": "diode",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "fwd": "0.575",
+        "rev": "0.859"
+      },
+      "answer": "leaky",
+      "outcome": "inconclusive"
+    },
+    {
+      "id": "R15",
+      "date": "2026-11-22",
+      "time": "14:14:13",
+      "plan_revision": 3,
+      "step": "diode-sweep",
+      "item": "D16",
+      "target": {
+        "ref": "D16"
+      },
+      "protocol": "diode",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "fwd": "0.190",
+        "rev": "0.569"
+      },
+      "answer": "leaky",
+      "outcome": "inconclusive"
+    },
+    {
+      "id": "R16",
+      "date": "2026-11-22",
+      "time": "14:17:51",
+      "plan_revision": 3,
+      "step": "vdd-to-c7",
+      "target": {
+        "pins": [
+          ["U4", "4"],
+          ["C7", "1"]
+        ]
+      },
+      "protocol": "continuity",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "outcome": "pass",
+      "readings": {
+        "leads": "0",
+        "ohms": "0"
+      },
+      "answer": "connected"
+    },
+    {
+      "id": "R17",
+      "date": "2026-11-22",
+      "time": "14:19:46",
+      "plan_revision": 3,
+      "step": "vdd-to-dc",
+      "target": {
+        "pins": [
+          ["U4", "4"],
+          ["J_DCP", "1"]
+        ]
+      },
+      "protocol": "continuity",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "outcome": "inconclusive",
+      "readings": {
+        "leads": "0",
+        "ohms": "8.6M"
+      },
+      "answer": "open"
+    },
+    {
+      "id": "R18",
+      "date": "2026-11-22",
+      "time": "14:24:56",
+      "plan_revision": 3,
+      "step": "timer-test",
+      "conditions": {
+        "power": "on",
+        "in_circuit": true
+      },
+      "outcome": "fail",
+      "answer": "button-side",
+      "effects": {
+        "suspects": {
+          "S5": "more_likely",
+          "S1": "less_likely"
+        }
+      }
+    },
+    {
+      "id": "R19",
+      "date": "2026-11-22",
+      "time": "14:36:09",
+      "plan_revision": 4,
+      "step": "buttons-sweep",
+      "item": "SW1",
+      "target": {
+        "ref": "SW1"
+      },
+      "protocol": "switch",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "open": "OL",
+        "closed": "0"
+      },
+      "answer": "good",
+      "outcome": "pass",
+      "notes": "Timer button"
+    },
+    {
+      "id": "R20",
+      "date": "2026-11-22",
+      "time": "14:38:18",
+      "plan_revision": 4,
+      "step": "buttons-sweep",
+      "item": "SW2",
+      "target": {
+        "ref": "SW2"
+      },
+      "protocol": "switch",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "open": "19M",
+        "closed": "0"
+      },
+      "answer": "good",
+      "outcome": "pass",
+      "notes": "Move button, not OL when released though?"
+    },
+    {
+      "id": "R21",
+      "date": "2026-11-22",
+      "time": "14:39:55",
+      "plan_revision": 4,
+      "step": "buttons-sweep",
+      "item": "SW3",
+      "target": {
+        "ref": "SW3"
+      },
+      "protocol": "switch",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "readings": {
+        "open": "7.5M",
+        "closed": "0"
+      },
+      "answer": "good",
+      "outcome": "pass",
+      "notes": "Shooting star button, not OL when released"
+    },
+    {
+      "id": "R22",
+      "date": "2026-11-22",
+      "time": "14:56:16",
+      "plan_revision": 4,
+      "step": "rail-3v3-to-ground",
+      "target": {
+        "net": "+3V3"
+      },
+      "protocol": "rail-to-ground",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "outcome": "pass",
+      "readings": {
+        "leads": "0",
+        "ohms": "10k"
+      },
+      "answer": "ok",
+      "effects": {
+        "parts": [
+          {
+            "refs": ["C1"],
+            "status": "cleared",
+            "of": "short",
+            "note": "If it is on the 3.3 V supply, as the model assumes."
+          }
+        ]
+      }
+    },
+    {
+      "id": "R23",
+      "date": "2026-11-22",
+      "time": "14:59:29",
+      "plan_revision": 4,
+      "step": "rail-5v-to-ground",
+      "target": {
+        "net": "+5V"
+      },
+      "protocol": "rail-to-ground",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "outcome": "inconclusive",
+      "readings": {
+        "leads": "0",
+        "ohms": "72"
+      },
+      "answer": "between",
+      "notes": "Changing the power switch state from ON to OFF does not change the measurement of 72 ohms."
+    },
+    {
+      "id": "R24",
+      "date": "2026-11-22",
+      "time": "15:03:23",
+      "plan_revision": 4,
+      "step": "vdd-to-dc-on",
+      "target": {
+        "pins": [
+          ["U4", "4"],
+          ["J_DCP", "1"]
+        ]
+      },
+      "protocol": "continuity",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "outcome": "inconclusive",
+      "readings": {
+        "leads": "0",
+        "ohms": "8.7M"
+      },
+      "answer": "open"
+    },
+    {
+      "id": "R25",
+      "date": "2026-11-22",
+      "time": "15:09:19",
+      "plan_revision": 4,
+      "step": "idle-3v3",
+      "target": {
+        "net": "+3V3"
+      },
+      "protocol": "rail-voltage",
+      "conditions": {
+        "power": "on",
+        "in_circuit": true
+      },
+      "outcome": "fail",
+      "readings": {
+        "volts": "2.07"
+      },
+      "answer": "low",
+      "effects": {
+        "suspects": {
+          "S9": "more_likely"
+        }
+      }
+    },
+    {
+      "id": "R26",
+      "date": "2026-11-22",
+      "time": "15:14:37",
+      "plan_revision": 5,
+      "step": "u2-ground-check",
+      "target": {
+        "pins": [
+          ["U2", "1"],
+          ["J_DCN", "1"]
+        ]
+      },
+      "protocol": "continuity",
+      "conditions": {
+        "power": "off",
+        "in_circuit": true
+      },
+      "outcome": "pass",
+      "readings": {
+        "leads": "0",
+        "ohms": "0"
+      },
+      "answer": "connected"
+    },
+    {
+      "id": "R27",
+      "date": "2026-11-22",
+      "time": "15:16:24",
+      "plan_revision": 5,
+      "step": "dc-in-idle",
+      "target": {
+        "net": "DC+"
+      },
+      "protocol": "rail-voltage",
+      "conditions": {
+        "power": "on",
+        "in_circuit": true
+      },
+      "outcome": "pass",
+      "readings": {
+        "volts": "5.04"
+      },
+      "answer": "in-range"
+    },
+    {
+      "id": "R28",
+      "date": "2026-11-22",
+      "time": "15:18:59",
+      "plan_revision": 5,
+      "step": "u2-vin-idle",
+      "target": {
+        "ref": "U2"
+      },
+      "protocol": "rail-voltage",
+      "conditions": {
+        "power": "on",
+        "in_circuit": true
+      },
+      "outcome": "pass",
+      "readings": {
+        "volts": "4.86"
+      },
+      "answer": "ok",
+      "effects": {
+        "suspects": {
+          "S11": "ruled_out",
+          "S9": "more_likely",
+          "S12": "more_likely"
+        }
+      }
+    },
+    {
+      "id": "R29",
+      "date": "2026-11-22",
+      "time": "15:22:13",
+      "plan_revision": 5,
+      "step": "frost-idle",
+      "target": {
+        "ref": "U2"
+      },
+      "conditions": {
+        "power": "on",
+        "in_circuit": true
+      },
+      "outcome": "not_done",
+      "notes": "I don't have the spray."
+    },
+    {
+      "id": "R30",
+      "date": "2026-11-22",
+      "time": "15:22:25",
+      "plan_revision": 5,
+      "step": "frost-idle",
+      "target": {
+        "ref": "U2"
+      },
+      "conditions": {
+        "power": "on",
+        "in_circuit": true
+      },
+      "outcome": "not_done",
+      "notes": "No spray",
+      "supersedes": "R29"
+    },
+    {
+      "id": "R31",
+      "date": "2026-11-22",
+      "time": "15:28:46",
+      "plan_revision": 6,
+      "step": "touch-idle",
+      "target": {
+        "ref": "U2"
+      },
+      "conditions": {
+        "power": "on",
+        "in_circuit": true
+      },
+      "outcome": "pass",
+      "answer": "all-cool",
+      "effects": {
+        "suspects": {
+          "S9": "more_likely"
+        }
+      }
+    },
+    {
+      "id": "R32",
+      "date": "2026-11-22",
+      "time": "15:30:57",
+      "plan_revision": 6,
+      "step": "d13-ends-idle",
+      "target": {
+        "ref": "D13"
+      },
+      "conditions": {
+        "power": "on",
+        "in_circuit": true
+      },
+      "outcome": "pass",
+      "readings": {
+        "band": "4.84",
+        "plain": "2.09"
+      },
+      "answer": "from-5v",
+      "effects": {
+        "suspects": {
+          "S10": "ruled_out"
+        }
+      }
+    }
+  ]
+}

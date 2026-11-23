@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PCB repair record",
+  "description": "What the user did and said while investigating a board (record.json in a scenario folder): observations (facts), instructions (requests to the agent) and results (answers to the plan's steps and other tests). Add-only: an entry never changes after it is saved, except to be voided. Written by the app, never by the agent. Specified in docs/scenario-format.md.",
+  "type": "object",
+  "required": ["format", "version"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "format": { "const": "pcb-record" },
+    "version": { "const": 2 },
+    "observations": {
+      "description": "What the user saw, did or knows, in their own words: facts for the agent to reason from.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/observation" }
+    },
+    "instructions": {
+      "description": "What the user asks of the agent for its next round. In force until voided; the agent answers each in the plan's history.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/instruction" }
+    },
+    "results": {
+      "description": "Every answer to a plan step, and every test made outside the plan.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/result" }
+    }
+  },
+  "$defs": {
+    "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "time": { "type": "string", "pattern": "^\\d{2}:\\d{2}(:\\d{2})?$", "description": "Local time of day when it was saved, to order a day's entries." },
+    "target": {
+      "description": "What an entry is about: a part, a net, or two points (pins). Exactly one field.",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "properties": {
+        "ref": { "type": "string", "minLength": 1 },
+        "net": { "type": "string", "minLength": 1 },
+        "pins": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "array",
+            "prefixItems": [{ "type": "string" }, { "type": "string" }],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      }
+    },
+    "void": {
+      "description": "The entry is withdrawn: it stays in the file, shown struck through, and counts for nothing.",
+      "type": "object",
+      "required": ["date", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "date": { "$ref": "#/$defs/date" },
+        "time": { "$ref": "#/$defs/time" },
+        "reason": { "type": "string" }
+      }
+    },
+    "photos": {
+      "description": "Paths inside the scenario folder.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "observation": {
+      "type": "object",
+      "required": ["id", "date", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^O\\d+$" },
+        "date": { "$ref": "#/$defs/date" },
+        "time": { "$ref": "#/$defs/time" },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Markdown."
+        },
+        "about": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/target" },
+          "description": "What it is about, linked to the board."
+        },
+        "step": {
+          "type": "string",
+          "description": "The plan step the user was on when writing it."
+        },
+        "photos": { "$ref": "#/$defs/photos" },
+        "void": { "$ref": "#/$defs/void" }
+      }
+    },
+    "instruction": {
+      "type": "object",
+      "required": ["id", "date", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^I\\d+$" },
+        "date": { "$ref": "#/$defs/date" },
+        "time": { "$ref": "#/$defs/time" },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Markdown."
+        },
+        "about": { "type": "array", "items": { "$ref": "#/$defs/target" } },
+        "step": { "type": "string" },
+        "void": { "$ref": "#/$defs/void" }
+      }
+    },
+    "effects": {
+      "description": "A copy of the chosen answer's effects, made when the result was saved.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "suspects": {
+          "type": "object",
+          "propertyNames": { "pattern": "^S\\d+$" },
+          "additionalProperties": {
+            "enum": ["ruled_out", "confirmed", "more_likely", "less_likely"]
+          }
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["refs", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "refs": {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              "status": {
+                "enum": ["ok", "cleared", "suspect", "faulty", "untestable"]
+              },
+              "of": { "type": "string" },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "required": ["id", "date", "outcome"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^R\\d+$" },
+        "date": { "$ref": "#/$defs/date" },
+        "time": { "$ref": "#/$defs/time" },
+        "plan_revision": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The plan's revision when the result was entered."
+        },
+        "step": {
+          "type": "string",
+          "description": "The step answered; absent for a test made outside the plan."
+        },
+        "item": {
+          "type": "string",
+          "description": "For a sweep: the item's id."
+        },
+        "target": { "$ref": "#/$defs/target" },
+        "protocol": { "type": "string" },
+        "conditions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "power": { "enum": ["off", "on"] },
+            "in_circuit": {
+              "type": "boolean",
+              "description": "On the board (true), or with the part lifted (false)."
+            },
+            "notes": { "type": "string" }
+          }
+        },
+        "readings": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Each reading as typed (\"99.8\", \"4.7k\", \"OL\"), by its key."
+        },
+        "answer": {
+          "type": "string",
+          "description": "The id of the answer chosen."
+        },
+        "outcome": {
+          "enum": [
+            "pass",
+            "fail",
+            "inconclusive",
+            "not_done",
+            "disputed",
+            "skipped"
+          ]
+        },
+        "effects": { "$ref": "#/$defs/effects" },
+        "notes": { "type": "string" },
+        "photos": { "$ref": "#/$defs/photos" },
+        "supersedes": {
+          "type": "string",
+          "pattern": "^R\\d+$",
+          "description": "An earlier result this one replaces."
+        },
+        "void": { "$ref": "#/$defs/void" }
+      }
+    }
+  }
+}

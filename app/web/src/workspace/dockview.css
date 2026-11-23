@@ -1,0 +1,120 @@
+/* The workspace's panels (dockview), after Kandev's workbench chrome (apps/web/app/dockview-theme.css):
+ * the theme's tokens, quiet 40 px tab strips, the active tab a muted pill, the close button shown
+ * on hover. Follows the light and dark themes through the tokens. */
+
+.dockview-theme-pcb {
+  --dv-background-color: var(--card);
+  --dv-group-view-background-color: var(--background);
+  --dv-separator-border: var(--border);
+  --dv-sash-color: transparent;
+  --dv-active-sash-color: var(--primary);
+  --dv-paneview-header-border-color: var(--border);
+  --dv-tabs-and-actions-container-font-size: 12px;
+  --dv-tabs-and-actions-container-height: 40px;
+  --dv-tabs-and-actions-container-background-color: var(--background);
+  --dv-activegroup-visiblepanel-tab-background-color: var(--muted);
+  --dv-activegroup-visiblepanel-tab-color: var(--foreground);
+  --dv-activegroup-hiddenpanel-tab-background-color: transparent;
+  --dv-activegroup-hiddenpanel-tab-color: var(--muted-foreground);
+  --dv-inactivegroup-visiblepanel-tab-background-color: var(--muted);
+  --dv-inactivegroup-visiblepanel-tab-color: var(--muted-foreground);
+  --dv-inactivegroup-hiddenpanel-tab-background-color: transparent;
+  --dv-inactivegroup-hiddenpanel-tab-color: var(--muted-foreground);
+  --dv-tab-close-icon: var(--muted-foreground);
+  --dv-tab-divider-color: transparent;
+  --dv-icon-hover-background-color: var(--muted);
+  --dv-drag-over-background-color: color-mix(in oklab, var(--primary) 10%, transparent);
+  --dv-drag-over-border-color: var(--primary);
+  --dv-separator-handle-background-color: var(--border);
+  --dv-separator-handle-hover-background-color: var(--primary);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.dockview-theme-pcb .dv-groupview {
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.dockview-theme-pcb .dv-tabs-and-actions-container {
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  min-height: 40px;
+  height: 40px;
+  padding: 7px 5px 5px;
+  align-items: center;
+}
+
+.dockview-theme-pcb .dv-tabs-container.dv-horizontal .dv-tab::before {
+  display: none !important;
+}
+
+.dockview-theme-pcb .dv-tab {
+  padding: 0;
+  margin: 0 1px;
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 1;
+  min-width: 4rem;
+  border-radius: 5px;
+  border-bottom: none !important;
+  outline: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  cursor: pointer;
+}
+
+.dockview-theme-pcb .dv-tab:hover {
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  color: var(--foreground);
+}
+
+.dockview-theme-pcb .dv-tab:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.dockview-theme-pcb .dv-default-tab {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0 7px;
+  gap: 5px;
+  height: 24px;
+  line-height: 1;
+  min-width: 0;
+}
+
+.dockview-theme-pcb .dv-default-tab .dv-default-tab-content {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dockview-theme-pcb .dv-default-tab .dv-default-tab-action {
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+  border-radius: 4px;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.dockview-theme-pcb .dv-default-tab .dv-default-tab-action .dv-svg {
+  height: 8px;
+  width: 8px;
+}
+
+.dockview-theme-pcb .dv-default-tab .dv-default-tab-action:hover {
+  background: color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
+.dockview-theme-pcb .dv-tab:hover .dv-default-tab .dv-default-tab-action,
+.dockview-theme-pcb .dv-active-tab .dv-default-tab .dv-default-tab-action {
+  opacity: 1;
+}
+
+.dockview-theme-pcb .dv-watermark {
+  background: var(--background);
+}

@@ -1,0 +1,17 @@
+# Claude Code's local files; the skills are shared
+.claude/*
+!.claude/skills/
+.DS_Store
+# regenerated from each scenario by build.py
+**/generated/
+# a local Python environment for app/scripts (see the new-scenario skill)
+.venv/
+__pycache__/
+# the app: dependencies and build output
+/app/web/node_modules/
+/app/web/dist/
+# the browser tests: puppeteer, installed on demand, and their screenshots
+/app/tests/node_modules/
+/app/tests/package*.json
+/app/tests/shots/
+*.tsbuildinfo

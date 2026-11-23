@@ -1,0 +1,8 @@
+# Only app/ goes into the image build (see app/Dockerfile); scenarios are mounted at run time.
+.git
+scenarios
+**/node_modules
+**/__pycache__
+.DS_Store
+app/web/dist
+app/tests

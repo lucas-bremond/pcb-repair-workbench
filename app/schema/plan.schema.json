@@ -1,0 +1,456 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PCB investigation plan",
+  "description": "The agent's analysis of a board (plan.json in a scenario folder): the test procedures, what is established, the suspects, the state of each part, and the investigation as a tree of steps. Written by the agent only; the app displays it and never writes it. Specified in docs/scenario-format.md.",
+  "type": "object",
+  "required": [
+    "format",
+    "version",
+    "revision",
+    "date",
+    "based_on",
+    "summary",
+    "protocols",
+    "phases",
+    "start",
+    "steps",
+    "history"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "format": { "const": "pcb-plan" },
+    "version": { "const": 2 },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Starts at 1, plus one at each update."
+    },
+    "date": { "$ref": "#/$defs/date" },
+    "based_on": {
+      "description": "What the agent had read when it wrote this revision (app/scripts/investigation.py stamp writes it).",
+      "type": "object",
+      "required": [
+        "model",
+        "observations",
+        "instructions",
+        "results",
+        "voided"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "string",
+          "description": "The fingerprint of scenario.json's parts, nets, power nets and instruments."
+        },
+        "observations": {
+          "type": ["string", "null"],
+          "description": "The last observation id read."
+        },
+        "instructions": {
+          "type": ["string", "null"],
+          "description": "The last instruction id read."
+        },
+        "results": {
+          "type": ["string", "null"],
+          "description": "The last result id read."
+        },
+        "voided": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many record entries were void."
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "description": "Where the investigation stands and what the plan is about to establish."
+    },
+    "warning": {
+      "type": "string",
+      "description": "A standing safety note, shown at the top of every step."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^F\\d+$" },
+          "title": { "type": "string" },
+          "text": { "type": "string" },
+          "evidence": { "$ref": "#/$defs/evidence" }
+        }
+      }
+    },
+    "suspects": {
+      "description": "The possible causes, most likely first.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^S\\d+$" },
+          "title": { "type": "string" },
+          "parts": { "type": "array", "items": { "type": "string" } },
+          "mode": {
+            "enum": ["short", "open", "degraded", "dead", "connection", "other"]
+          },
+          "status": { "enum": ["open", "ruled_out", "confirmed"] },
+          "why": { "type": "string" },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "for": { "$ref": "#/$defs/evidence" },
+              "against": { "$ref": "#/$defs/evidence" }
+            }
+          }
+        }
+      }
+    },
+    "assessment": {
+      "description": "The state of each part, as of based_on.results. Parts not listed are untested.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "additionalProperties": false,
+        "properties": {
+          "status": { "$ref": "#/$defs/partStatus" },
+          "of": {
+            "type": "string",
+            "description": "With cleared: the failure it is cleared of (short, open...)."
+          },
+          "evidence": { "$ref": "#/$defs/evidence" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "protocols": {
+      "description": "The test procedures for this board, by id.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/protocol" }
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "title": { "type": "string" },
+          "goal": { "type": "string" }
+        }
+      }
+    },
+    "start": { "type": "string", "description": "The first step's id." },
+    "steps": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/id" },
+      "additionalProperties": { "$ref": "#/$defs/step" }
+    },
+    "history": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["revision", "date", "reason", "changes"],
+        "additionalProperties": false,
+        "properties": {
+          "revision": { "type": "integer", "minimum": 1 },
+          "date": { "$ref": "#/$defs/date" },
+          "reason": { "type": "string" },
+          "changes": { "type": "string" },
+          "model_changes": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Every change made to scenario.json in this round, and why."
+          },
+          "replies": {
+            "type": "object",
+            "propertyNames": { "pattern": "^I\\d+$" },
+            "additionalProperties": { "type": "string" },
+            "description": "The answer to each instruction handled in this round."
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "evidence": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[ORI]\\d+$" },
+      "description": "Ids of results, observations or instructions."
+    },
+    "partStatus": {
+      "enum": ["ok", "cleared", "suspect", "faulty", "untestable"]
+    },
+    "instrument": {
+      "type": "string",
+      "description": "An instrument kind, as in scenario.json's instruments."
+    },
+    "target": {
+      "description": "A part, a net, or two points (pins). Exactly one field.",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "properties": {
+        "ref": { "type": "string", "minLength": 1 },
+        "net": { "type": "string", "minLength": 1 },
+        "pins": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "array",
+            "prefixItems": [{ "type": "string" }, { "type": "string" }],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      }
+    },
+    "reading": {
+      "type": "object",
+      "required": ["key", "label", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "label": { "type": "string" },
+        "unit": { "enum": ["Ω", "V", "A", "F", "°C", ""] },
+        "hint": { "type": "string" },
+        "optional": { "type": "boolean" }
+      }
+    },
+    "expect": {
+      "type": "object",
+      "required": ["text", "basis"],
+      "additionalProperties": false,
+      "properties": {
+        "text": { "type": "string" },
+        "basis": {
+          "enum": [
+            "marking",
+            "datasheet",
+            "same_board",
+            "earlier",
+            "physics",
+            "rule_of_thumb",
+            "none"
+          ]
+        },
+        "source": { "type": "string" }
+      }
+    },
+    "condition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["reading"],
+          "additionalProperties": false,
+          "minProperties": 2,
+          "properties": {
+            "reading": { "type": "string" },
+            "min": { "type": "number" },
+            "max": { "type": "number" },
+            "is": { "const": "OL" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["items"],
+          "additionalProperties": false,
+          "properties": {
+            "items": { "enum": ["all_pass", "any_fail", "otherwise"] }
+          }
+        }
+      ]
+    },
+    "effects": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "suspects": {
+          "type": "object",
+          "propertyNames": { "pattern": "^S\\d+$" },
+          "additionalProperties": {
+            "enum": ["ruled_out", "confirmed", "more_likely", "less_likely"]
+          }
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["refs", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "refs": {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1
+              },
+              "status": { "$ref": "#/$defs/partStatus" },
+              "of": { "type": "string" },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "answer": {
+      "type": "object",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string" },
+        "outcome": { "enum": ["pass", "fail", "inconclusive"] },
+        "when": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/condition" },
+          "description": "All must hold; the first matching answer is preselected."
+        },
+        "means": { "type": "string" },
+        "effects": { "$ref": "#/$defs/effects" },
+        "next": {
+          "type": "string",
+          "description": "The step that follows (in a plan step; a protocol's answers have none)."
+        }
+      }
+    },
+    "probe": {
+      "type": "object",
+      "required": ["lead"],
+      "additionalProperties": false,
+      "properties": {
+        "lead": { "enum": ["red", "black", "any"] },
+        "ref": { "type": "string" },
+        "pin": { "type": "string" },
+        "net": { "type": "string" }
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "required": ["title", "goal", "instruments", "power", "steps", "answers"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string" },
+        "applies_to": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Part kinds it is the default for, or net and pins."
+        },
+        "goal": { "type": "string" },
+        "instruments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/instrument" }
+        },
+        "power": { "enum": ["off", "on"] },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["text"],
+            "additionalProperties": false,
+            "properties": {
+              "text": { "type": "string" },
+              "reading": { "$ref": "#/$defs/reading" }
+            }
+          }
+        },
+        "expect": { "$ref": "#/$defs/expect" },
+        "limits": {
+          "type": "string",
+          "description": "What this test cannot conclude."
+        },
+        "answers": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/answer" }
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "required": ["phase", "kind", "title"],
+      "additionalProperties": false,
+      "properties": {
+        "phase": { "type": "string" },
+        "kind": {
+          "enum": ["check", "measure", "sweep", "action", "replan", "done"]
+        },
+        "title": { "type": "string" },
+        "target": { "$ref": "#/$defs/target" },
+        "protocol": { "type": "string" },
+        "probes": { "type": "array", "items": { "$ref": "#/$defs/probe" } },
+        "setup": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "The state required before the action, each ticked by the user."
+        },
+        "power": { "enum": ["off", "on"] },
+        "warning": {
+          "type": "string",
+          "description": "A hazard and its consequence, shown before the instruction."
+        },
+        "instruction": {
+          "type": "string",
+          "description": "Markdown: what to do."
+        },
+        "readings": { "type": "array", "items": { "$ref": "#/$defs/reading" } },
+        "instruments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/instrument" }
+        },
+        "expect": { "$ref": "#/$defs/expect" },
+        "why": {
+          "type": "string",
+          "description": "Why the step is asked: what it separates or clears."
+        },
+        "risk": { "enum": ["none", "low", "medium", "high"] },
+        "minutes": { "type": "number", "minimum": 0 },
+        "question": {
+          "type": "string",
+          "description": "The open question this step settles."
+        },
+        "skip": {
+          "type": "string",
+          "description": "Where to continue when the user skips this step; without it, the step cannot be skipped."
+        },
+        "answers": { "type": "array", "items": { "$ref": "#/$defs/answer" } },
+        "items": {
+          "description": "For a sweep: the targets, each tested with the step's protocol.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "target"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "target": { "$ref": "#/$defs/target" },
+              "probes": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/probe" }
+              },
+              "expect": { "$ref": "#/$defs/expect" },
+              "answers": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/answer" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

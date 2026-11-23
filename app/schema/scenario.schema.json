@@ -1,0 +1,292 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lucas-bremond/pcb-scenario/scenario.schema.json",
+  "title": "PCB repair scenario",
+  "description": "One board under investigation: its parts, the nets known so far with the confidence of every connection, the photos they are placed on, the instruments at hand, and the questions still open. The investigation itself is in plan.json and record.json next to it (docs/scenario-format.md). Paths are relative to the scenario folder. Pins that are on no net are unknown, not unconnected.",
+  "type": "object",
+  "required": ["format", "version", "board", "confidence", "photos", "parts", "nets"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "format": { "const": "pcb-scenario" },
+    "version": { "const": 2 },
+    "board": {
+      "type": "object",
+      "required": ["title", "name", "marking"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "description": "The scenario's name, shown as the page heading." },
+        "name": { "type": "string", "description": "The board, for example 'Acme X1 main board'." },
+        "marking": { "type": "string", "description": "What the board's silkscreen says (part number, revision, date)." },
+        "model_date": { "type": "string", "description": "When the model was last reviewed (YYYY-MM-DD)." },
+        "description": { "type": "string", "description": "The device and the fault, in a sentence or two." }
+      }
+    },
+    "instruments": {
+      "description": "What the user has on the bench. The plan only asks for what these instruments can do.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "description": "multimeter, bench_supply, usb_meter, esr_meter, lcr_meter, component_tester, oscilloscope, thermal_camera, magnifier, soldering_iron, hot_air, freeze_spray, or another word."
+          },
+          "model": { "type": "string", "description": "Make and model." },
+          "notes": { "type": "string", "description": "Limits that matter (ranges, modes it lacks)." }
+        }
+      }
+    },
+    "confidence": {
+      "description": "The five confidence levels, strongest first. Their names are fixed (the schematic and the editor rely on them); the scenario sets their rank, colour and meaning.",
+      "type": "object",
+      "required": ["measured", "confirmed", "photo", "datasheet", "assumed"],
+      "additionalProperties": false,
+      "properties": {
+        "measured": { "$ref": "#/$defs/level" },
+        "confirmed": { "$ref": "#/$defs/level" },
+        "photo": { "$ref": "#/$defs/level" },
+        "datasheet": { "$ref": "#/$defs/level" },
+        "assumed": { "$ref": "#/$defs/level" }
+      }
+    },
+    "photos": {
+      "description": "The board photos parts and traces are placed on: one per side.",
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/$defs/side" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["file", "size"],
+        "additionalProperties": false,
+        "properties": {
+          "file": { "type": "string", "description": "Path of the original photo, relative to the scenario folder." },
+          "size": { "$ref": "#/$defs/size", "description": "The photo's [width, height] in pixels, after its EXIF rotation." },
+          "display_rotation": {
+            "enum": [0, 180],
+            "description": "Shown turned by this angle so the silkscreen reads upright. Boxes and traces stay in the file's pixels."
+          }
+        }
+      }
+    },
+    "parts": {
+      "description": "Every part, by reference designator (or a made-up one, such as J_DCP for a wire pad).",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/ref" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["value", "group", "pins"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "description": "ic, transistor, diode, led, resistor, capacitor, electrolytic, inductor, switch, pad (a wire pad), or another word."
+          },
+          "value": { "type": "string", "description": "Value or part number, as read from the part." },
+          "package": { "type": "string" },
+          "label": { "type": "string", "description": "Display name when it differs from the reference (for example the silkscreen text of a pad)." },
+          "group": { "type": "string", "description": "The block (see blocks) the part belongs to." },
+          "pins": {
+            "type": "object",
+            "description": "Pin number to pin name (or function).",
+            "propertyNames": { "pattern": "^[^\\s.]+$" },
+            "additionalProperties": { "type": "string" }
+          },
+          "box": {
+            "type": "object",
+            "description": "Where the part is on each photo.",
+            "propertyNames": { "$ref": "#/$defs/side" },
+            "additionalProperties": { "$ref": "#/$defs/box" }
+          },
+          "wire": { "type": "string", "description": "For a wire pad: the wire's colour." },
+          "note": { "type": "string" },
+          "pinout_source": { "type": "string", "description": "Where the pin names come from (datasheet, photo...)." },
+          "formerly": { "$ref": "#/$defs/formerly" }
+        }
+      }
+    },
+    "nets": {
+      "description": "The nets known so far. A net is only as certain as its weakest connection.",
+      "type": "object",
+      "propertyNames": { "minLength": 1 },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["nodes"],
+        "additionalProperties": false,
+        "properties": {
+          "description": { "type": "string" },
+          "formerly": { "$ref": "#/$defs/formerly" },
+          "nodes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["ref", "pin", "conf"],
+              "additionalProperties": false,
+              "properties": {
+                "ref": { "$ref": "#/$defs/ref" },
+                "pin": { "type": ["string", "integer"] },
+                "conf": { "$ref": "#/$defs/conf" },
+                "evidence": { "type": "string", "description": "What shows this connection: photo, label, datasheet, meter reading." }
+              }
+            }
+          }
+        }
+      }
+    },
+    "traces": {
+      "description": "Copper followed on a photo, drawn as a polyline in that photo's pixels.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "net", "side", "points"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "net": { "type": "string" },
+          "side": { "$ref": "#/$defs/side" },
+          "points": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/point" } },
+          "evidence": { "type": "string" }
+        }
+      }
+    },
+    "power_nets": {
+      "description": "Nets drawn with power symbols in the schematic instead of wires.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "blocks": {
+      "description": "Functional blocks for the block diagram, placed on a grid.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["title", "col", "row"],
+        "additionalProperties": false,
+        "properties": {
+          "title": { "type": "string" },
+          "subtitle": { "type": "string" },
+          "col": { "type": "integer", "minimum": 0 },
+          "row": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "links": {
+      "description": "Links between blocks in the block diagram.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "conf"],
+        "additionalProperties": false,
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "conf": { "$ref": "#/$defs/conf" },
+          "label": { "type": "string" }
+        }
+      }
+    },
+    "open_questions": {
+      "description": "The gaps that matter most, each with the measurement that would settle it.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "pins", "check"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "pins": {
+            "type": "array",
+            "items": { "type": "array", "prefixItems": [{ "$ref": "#/$defs/ref" }, { "type": ["string", "integer"] }], "minItems": 2, "maxItems": 2 }
+          },
+          "candidates": { "type": "array", "items": { "type": "string" } },
+          "check": { "type": "string" },
+          "why": { "type": "string" }
+        }
+      }
+    },
+    "schematic_order": {
+      "description": "The blocks' left-to-right order in the schematic (default: the order of blocks). Blocks with no parts are skipped.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "schematic_layout": {
+      "description": "Hand layout of the schematic, per block: place {REF: [dx, dy, 'mirror'?]} in mm from the block's column origin, wires (routes of REF.PIN and [x, y] corners), power ([net, dx, dy, L/R/U/D]) and width. Parts not placed are stacked below.",
+      "type": "object"
+    },
+    "schematic": {
+      "description": "The full layout saved by the schematic editor (parts, wires, power), which replaces schematic_layout.",
+      "type": "object"
+    },
+    "geometry": {
+      "description": "Optional: how the photos map onto the board (the aligned view and the 3D view). Without it, or with alignment 'auto', the build finds the board in each photo and aligns them itself; with the hand-made fields below (bottom_x0, bottom_y1, outline_bottom_px, top_points and a scale), it uses those.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "alignment": {
+          "enum": ["auto", "points"],
+          "description": "auto: segment and align the photos automatically; points: use the hand-made fields. Default: points when they are all present, else auto."
+        },
+        "reference": {
+          "$ref": "#/$defs/side",
+          "description": "For auto: the straighter photo, which defines the board frame (default: bottom)."
+        },
+        "bottom_px_per_mm": { "type": "number", "exclusiveMinimum": 0 },
+        "board_width_mm": { "type": ["number", "null"], "description": "A measured width; overrides bottom_px_per_mm." },
+        "scale_note": { "type": "string", "description": "Where the scale comes from." },
+        "bottom_x0": { "type": "number" },
+        "bottom_y1": { "type": "number" },
+        "thickness_mm": { "type": "number", "exclusiveMinimum": 0 },
+        "outline_bottom_px": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/point" } },
+        "top_points": {
+          "type": "object",
+          "description": "Points visible on both photos: name: [[top x, top y], [bottom x, bottom y]]. At least 4.",
+          "minProperties": 4,
+          "additionalProperties": { "type": "array", "items": { "$ref": "#/$defs/point" }, "minItems": 2, "maxItems": 2 }
+        },
+        "bodies": {
+          "type": "object",
+          "description": "3D body overrides by part: d (diameter), h (height), at ([x, y] centre in board mm).",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": { "d": { "type": "number" }, "h": { "type": "number" }, "at": { "$ref": "#/$defs/point" } }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "formerly": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "The names it had before a rename, so plan.json and record.json entries written with an old name still find it."
+    },
+    "side": { "enum": ["top", "bottom"] },
+    "ref": { "type": "string", "pattern": "^[^\\s.]+$" },
+    "conf": { "enum": ["measured", "confirmed", "photo", "datasheet", "assumed"] },
+    "level": {
+      "type": "object",
+      "required": ["rank", "color", "meaning"],
+      "additionalProperties": false,
+      "properties": {
+        "rank": { "type": "integer" },
+        "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+        "meaning": { "type": "string" }
+      }
+    },
+    "size": { "type": "array", "prefixItems": [{ "type": "integer", "minimum": 1 }, { "type": "integer", "minimum": 1 }], "minItems": 2, "maxItems": 2 },
+    "point": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }], "minItems": 2, "maxItems": 2 },
+    "box": {
+      "type": "array",
+      "description": "[x0, y0, x1, y1] in the photo's pixels.",
+      "items": { "type": "number" },
+      "minItems": 4,
+      "maxItems": 4
+    }
+  }
+}
